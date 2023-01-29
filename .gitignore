@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Vscode Settings
+.vscode
+
+# conda activation script
+activate.bat
