@@ -133,3 +133,5 @@ dmypy.json
 
 # conda activation script
 activate.bat
+logs
+models
