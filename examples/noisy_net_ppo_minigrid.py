@@ -24,12 +24,12 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
 
 
 # TODO: clean up this code
-LOAD_MODEL = False
+LOAD_MODEL = True
 NOISY = True
 TIMESTEPS = 10000000
 ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
 model_file_name = f"models/minigrid{'_noisy' if NOISY else ''}_cnn_ppo_{TIMESTEPS}"
-
+print(model_file_name)
 if __name__ == "__main__":
     env = gym.make(ENV_NAME)
 
@@ -108,10 +108,11 @@ if __name__ == "__main__":
         print(f"Num Episodes: {eps}")
         print("-------------------------------------------")
 
+    run()
+
     if LOAD_MODEL:
         model.load(model_file_name)
     else:
-        run()
         model.learn(total_timesteps=TIMESTEPS, log_interval=4)
 
     run()
