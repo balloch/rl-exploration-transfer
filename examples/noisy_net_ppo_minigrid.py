@@ -6,11 +6,12 @@ parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
 import gym
-from stable_baselines3 import DQN
-import numpy as np
+from stable_baselines3 import PPO
 import gym_minigrid
 
-from rlexplore.noisy_nets.noisy_dqn import NoisyCnnPolicy
+# from rlexplore.noisy_nets.noisy_dqn import NoisyDQNCnnPolicy
+# from rlexplore.noisy_nets.noisy_actor import
+from rlexplore.noisy_nets.noisy_mlp import NoisyActorCriticCnnPolicy
 
 
 class StableBaselinesWrapper(gym.ObservationWrapper):
@@ -24,10 +25,10 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
 
 LOAD_MODEL = False
 NOISY = True
-model_file_name = "models/minigrid_noisy_cnn_dqn"
+model_file_name = "models/minigrid_noisy_cnn_ppo_10000000"
 
 if not NOISY:
-    model_file_name = "models/minigrid_cnn_dqn"
+    model_file_name = "models/minigrid_cnn_ppo_10000000"
 
 if __name__ == "__main__":
     env = gym.make("MiniGrid-DoorKey-8x8-v0")
@@ -37,16 +38,46 @@ if __name__ == "__main__":
     env = StableBaselinesWrapper(env)
 
     if NOISY:
-        model = DQN(
-            NoisyCnnPolicy,
-            env,
-            verbose=0,
-            exploration_final_eps=0,
-            exploration_fraction=0,
-            exploration_initial_eps=0,
+        # model = DQN(
+        #     NoisyDQNCnnPolicy,
+        #     env,
+        #     verbose=0,
+        #     exploration_final_eps=0,
+        #     exploration_fraction=0,
+        #     exploration_initial_eps=0,
+        # )
+        model = PPO(
+            policy=NoisyActorCriticCnnPolicy,
+            env=env,
+            verbose=1,
+            learning_rate=0.001,
+            n_steps=2048,
+            batch_size=256,
+            n_epochs=4,
+            gamma=0.99,
+            gae_lambda=0.95,
+            clip_range=0.2,
+            ent_coef=0,
+            vf_coef=0.5,
+            max_grad_norm=0.5,
         )
     else:
-        model = DQN("CnnPolicy", env, verbose=0)
+        # model = DQN("CnnPolicy", env, verbose=0)
+        model = PPO(
+            policy="CnnPolicy",
+            env=env,
+            verbose=1,
+            learning_rate=0.001,
+            n_steps=2048,
+            batch_size=256,
+            n_epochs=4,
+            gamma=0.99,
+            gae_lambda=0.95,
+            clip_range=0.2,
+            ent_coef=0.01,
+            vf_coef=0.5,
+            max_grad_norm=0.5,
+        )
 
     def run():
 
