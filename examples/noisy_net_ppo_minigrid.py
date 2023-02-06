@@ -26,7 +26,7 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
 # TODO: clean up this code
 LOAD_MODEL = True
 NOISY = True
-TIMESTEPS = 10000000
+TIMESTEPS = 10000000 # TOOD: change to 2e6 instead of 1e7
 ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
 model_file_name = f"models/minigrid{'_noisy' if NOISY else ''}_cnn_ppo_{TIMESTEPS}"
 print(model_file_name)
