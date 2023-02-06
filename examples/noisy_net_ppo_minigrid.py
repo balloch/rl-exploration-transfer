@@ -25,13 +25,12 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
 
 LOAD_MODEL = False
 NOISY = True
-model_file_name = "models/minigrid_noisy_cnn_ppo_10000000"
-
-if not NOISY:
-    model_file_name = "models/minigrid_cnn_ppo_10000000"
+TIMESTEPS = 10000000
+ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
+model_file_name = f"models/minigrid{'_noisy' if NOISY else ''}_cnn_ppo_{TIMESTEPS}"
 
 if __name__ == "__main__":
-    env = gym.make("MiniGrid-DoorKey-8x8-v0")
+    env = gym.make(ENV_NAME)
 
     env = gym_minigrid.wrappers.RGBImgObsWrapper(env, tile_size=8)
 
@@ -112,7 +111,7 @@ if __name__ == "__main__":
         model.load(model_file_name)
     else:
         run()
-        model.learn(total_timesteps=10000000, log_interval=4)
+        model.learn(total_timesteps=TIMESTEPS, log_interval=4)
 
     run()
 
