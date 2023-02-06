@@ -23,6 +23,7 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
         return obs["image"]
 
 
+# TODO: clean up this code
 LOAD_MODEL = False
 NOISY = True
 TIMESTEPS = 10000000

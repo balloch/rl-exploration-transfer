@@ -255,6 +255,7 @@ class NoisyActorCriticPolicy(ActorCriticPolicy):
         )
 
 
+# TODO: move noisy layers to the action policy instead of the MLP feature extractor
 class NoisyActorCriticCnnPolicy(NoisyActorCriticPolicy):
     def __init__(
         self,
