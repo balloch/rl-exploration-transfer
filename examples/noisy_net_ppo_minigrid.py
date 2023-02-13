@@ -111,7 +111,7 @@ if __name__ == "__main__":
     else:
         model.learn(
             total_timesteps=args.total_time_steps,
-            log_interval=4,
+            log_interval=1,
             tb_log_name=model_name,
         )
 
