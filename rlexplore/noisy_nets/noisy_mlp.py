@@ -48,27 +48,6 @@ def create_noisy_mlp(
 
 
 class NoisyMlpExtractor(nn.Module):
-    """
-    Constructs an MLP that receives the output from a previous features extractor (i.e. a CNN) or directly
-    the observations (if no features extractor is applied) as an input and outputs a latent representation
-    for the policy and a value network.
-    The ``net_arch`` parameter allows to specify the amount and size of the hidden layers.
-    It can be in either of the following forms:
-    1. ``dict(vf=[<list of layer sizes>], pi=[<list of layer sizes>])``: to specify the amount and size of the layers in the
-        policy and value nets individually. If it is missing any of the keys (pi or vf),
-        zero layers will be considered for that key.
-    2. ``[<list of layer sizes>]``: "shortcut" in case the amount and size of the layers
-        in the policy and value nets are the same. Same as ``dict(vf=int_list, pi=int_list)``
-        where int_list is the same for the actor and critic.
-    .. note::
-        If a key is not specified or an empty list is passed ``[]``, a linear network will be used.
-    :param feature_dim: Dimension of the feature vector (can be the output of a CNN)
-    :param net_arch: The specification of the policy and value networks.
-        See above for details on its formatting.
-    :param activation_fn: The activation function to use for the networks.
-    :param device: PyTorch device.
-    """
-
     def __init__(
         self,
         feature_dim: int,
@@ -80,8 +59,6 @@ class NoisyMlpExtractor(nn.Module):
         device = get_device(device)
         policy_net: List[nn.Module] = []
         value_net: List[nn.Module] = []
-        last_layer_dim_pi = feature_dim
-        last_layer_dim_vf = feature_dim
 
         # save dimensions of layers in policy and value nets
         if isinstance(net_arch, dict):
@@ -92,24 +69,26 @@ class NoisyMlpExtractor(nn.Module):
             pi_layers_dims = vf_layers_dims = net_arch
 
         # Iterate through the policy layers and build the policy net
-        for i in range(len(pi_layers_dims)):
-            curr_layer_dim = pi_layers_dims[i]
-            if i < len(pi_layers_dims) - 2:
-                policy_net.append(nn.Linear(last_layer_dim_pi, curr_layer_dim))
-            else:
-                policy_net.append(NoisyLinear(last_layer_dim_pi, curr_layer_dim))
-            policy_net.append(activation_fn())
-            last_layer_dim_pi = curr_layer_dim
+        policy_net = create_noisy_mlp(
+            input_dim=feature_dim,
+            output_dim=pi_layers_dims[-1],
+            net_arch=pi_layers_dims[:-1],
+            activation_fn=activation_fn,
+            num_noisy_layers=1,
+        )
 
         # Iterate through the value layers and build the value net
-        for curr_layer_dim in vf_layers_dims:
-            value_net.append(nn.Linear(last_layer_dim_vf, curr_layer_dim))
-            value_net.append(activation_fn())
-            last_layer_dim_vf = curr_layer_dim
+        value_net = create_noisy_mlp(
+            input_dim=feature_dim,
+            output_dim=vf_layers_dims[-1],
+            net_arch=vf_layers_dims[:-1],
+            activation_fn=activation_fn,
+            num_noisy_layers=0,
+        )
 
         # Save dim, used to create the distributions
-        self.latent_dim_pi = last_layer_dim_pi
-        self.latent_dim_vf = last_layer_dim_vf
+        self.latent_dim_pi = pi_layers_dims[-1]
+        self.latent_dim_vf = vf_layers_dims[-1]
 
         # Create networks
         # If the list of layers is empty, the network will just act as an Identity module
