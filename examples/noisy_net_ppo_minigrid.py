@@ -16,7 +16,7 @@ from rlexplore.noisy_nets.noisy_actor import NoisyActorCriticCnnPolicy
 
 LOAD_MODEL = False
 NOISY = True
-TIMESTEPS = 2000000
+TIMESTEPS = 3000000
 ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
 NUM_NOISY_LAYERS = 2
 
