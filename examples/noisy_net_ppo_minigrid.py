@@ -5,13 +5,33 @@ curren_dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
+import argparse
 import gym
-from stable_baselines3 import PPO
 import gym_minigrid
+from stable_baselines3 import PPO
+import time
 
-# from rlexplore.noisy_nets.noisy_dqn import NoisyDQNCnnPolicy
-# from rlexplore.noisy_nets.noisy_actor import
-from rlexplore.noisy_nets.noisy_mlp import NoisyActorCriticCnnPolicy
+from rlexplore.noisy_nets.noisy_actor import NoisyActorCriticCnnPolicy
+
+
+LOAD_MODEL = False
+NOISY = True
+TIMESTEPS = 2000000
+ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
+
+
+def get_args():
+
+    str2bool = lambda s: s.lower() in ["true", "1", "t", "y", "yes", "yeah"]
+
+    parser = argparse.ArgumentParser(description="RL")
+    parser.add_argument("--load-model", type=str2bool, default=LOAD_MODEL)
+    parser.add_argument("--noisy-layers", type=str2bool, default=NOISY)
+    parser.add_argument("--total-time-steps", type=int, default=TIMESTEPS)
+    parser.add_argument("--env-id", type=str, default=ENV_NAME)
+
+    args = parser.parse_args()
+    return args
 
 
 class StableBaselinesWrapper(gym.ObservationWrapper):
@@ -23,29 +43,23 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
         return obs["image"]
 
 
-# TODO: clean up this code
-LOAD_MODEL = True
-NOISY = True
-TIMESTEPS = 10000000 # TOOD: change to 2e6 instead of 1e7
-ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
-model_file_name = f"models/minigrid{'_noisy' if NOISY else ''}_cnn_ppo_{TIMESTEPS}"
-print(model_file_name)
 if __name__ == "__main__":
-    env = gym.make(ENV_NAME)
+
+    args = get_args()
+
+    timestamp = int(time.time())
+
+    model_name = f"{args.env_id.lower().replace('-', '_')}{'_noisy' if args.noisy_layers else ''}_cnn_ppo_{args.total_time_steps}_{timestamp}"
+    model_file_path = f"models/{model_name}"
+    log_path = f"logs/{model_name}"
+
+    env = gym.make(args.env_id)
 
     env = gym_minigrid.wrappers.RGBImgObsWrapper(env, tile_size=8)
 
     env = StableBaselinesWrapper(env)
 
-    if NOISY:
-        # model = DQN(
-        #     NoisyDQNCnnPolicy,
-        #     env,
-        #     verbose=0,
-        #     exploration_final_eps=0,
-        #     exploration_fraction=0,
-        #     exploration_initial_eps=0,
-        # )
+    if args.noisy_layers:
         model = PPO(
             policy=NoisyActorCriticCnnPolicy,
             env=env,
@@ -60,9 +74,9 @@ if __name__ == "__main__":
             ent_coef=0,
             vf_coef=0.5,
             max_grad_norm=0.5,
+            tensorboard_log="./logs/",
         )
     else:
-        # model = DQN("CnnPolicy", env, verbose=0)
         model = PPO(
             policy="CnnPolicy",
             env=env,
@@ -77,9 +91,10 @@ if __name__ == "__main__":
             ent_coef=0.01,
             vf_coef=0.5,
             max_grad_norm=0.5,
+            tensorboard_log="./logs/",
         )
 
-    def run():
+    def test_model():
 
         total_reward = 0
         eps = 1
@@ -87,16 +102,10 @@ if __name__ == "__main__":
 
         observation = env.reset()
         for _ in range(num_steps):
-            # action = env.action_space.sample()
             action, _ = model.predict(observation, deterministic=True)
-            # observation, reward, terminated, truncated = env.step(action) # minigrid
-            observation, reward, done, info = env.step(action)  # cart pole
+            observation, reward, done, _ = env.step(action)
             total_reward += reward
-            # print(observation)
 
-            # env.render()
-
-            # if terminated or truncated: # minigrid
             if done:
                 observation = env.reset()
                 eps += 1
@@ -108,16 +117,20 @@ if __name__ == "__main__":
         print(f"Num Episodes: {eps}")
         print("-------------------------------------------")
 
-    run()
+    test_model()
 
-    if LOAD_MODEL:
-        model.load(model_file_name)
+    if args.load_model:
+        model.load(model_file_path)
     else:
-        model.learn(total_timesteps=TIMESTEPS, log_interval=4)
+        model.learn(
+            total_timesteps=args.total_time_steps,
+            log_interval=4,
+            tb_log_name=model_name,
+        )
 
-    run()
+    test_model()
 
-    if not LOAD_MODEL:
-        model.save(model_file_name)
+    if not args.load_model:
+        model.save(model_file_path)
 
     env.close()
