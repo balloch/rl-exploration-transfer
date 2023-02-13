@@ -18,6 +18,7 @@ LOAD_MODEL = False
 NOISY = True
 TIMESTEPS = 2000000
 ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
+NUM_NOISY_LAYERS = 2
 
 
 def get_args():
@@ -29,6 +30,7 @@ def get_args():
     parser.add_argument("--noisy-layers", type=str2bool, default=NOISY)
     parser.add_argument("--total-time-steps", type=int, default=TIMESTEPS)
     parser.add_argument("--env-id", type=str, default=ENV_NAME)
+    parser.add_argument("--num-noisy-layers", type=int, default=NUM_NOISY_LAYERS)
 
     args = parser.parse_args()
     return args
@@ -59,40 +61,25 @@ if __name__ == "__main__":
 
     env = StableBaselinesWrapper(env)
 
-    if args.noisy_layers:
-        model = PPO(
-            policy=NoisyActorCriticCnnPolicy,
-            env=env,
-            verbose=1,
-            learning_rate=0.001,
-            n_steps=2048,
-            batch_size=256,
-            n_epochs=4,
-            gamma=0.99,
-            gae_lambda=0.95,
-            clip_range=0.2,
-            ent_coef=0,
-            vf_coef=0.5,
-            max_grad_norm=0.5,
-            tensorboard_log="./logs/",
-        )
-    else:
-        model = PPO(
-            policy="CnnPolicy",
-            env=env,
-            verbose=1,
-            learning_rate=0.001,
-            n_steps=2048,
-            batch_size=256,
-            n_epochs=4,
-            gamma=0.99,
-            gae_lambda=0.95,
-            clip_range=0.2,
-            ent_coef=0.01,
-            vf_coef=0.5,
-            max_grad_norm=0.5,
-            tensorboard_log="./logs/",
-        )
+    model = PPO(
+        policy=NoisyActorCriticCnnPolicy,
+        env=env,
+        verbose=1,
+        learning_rate=0.001,
+        n_steps=2048,
+        batch_size=256,
+        n_epochs=4,
+        gamma=0.99,
+        gae_lambda=0.95,
+        clip_range=0.2,
+        ent_coef=0,
+        vf_coef=0.5,
+        max_grad_norm=0.5,
+        tensorboard_log="./logs/",
+        policy_kwargs=dict(
+            num_noisy_layers=args.num_noisy_layers if args.noisy_layers else 0
+        ),
+    )
 
     def test_model():
 
