@@ -54,11 +54,14 @@ class NoisyMlpExtractor(nn.Module):
         net_arch: Union[List[int], Dict[str, List[int]]],
         activation_fn: Type[nn.Module],
         device: Union[torch.device, str] = "auto",
+        num_noisy_layers=2,
     ) -> None:
         super().__init__()
         device = get_device(device)
         policy_net: List[nn.Module] = []
         value_net: List[nn.Module] = []
+
+        self.num_noisy_layers = num_noisy_layers
 
         # save dimensions of layers in policy and value nets
         if isinstance(net_arch, dict):
@@ -68,27 +71,41 @@ class NoisyMlpExtractor(nn.Module):
         else:
             pi_layers_dims = vf_layers_dims = net_arch
 
+        assert num_noisy_layers <= len(pi_layers_dims)
+
         # Iterate through the policy layers and build the policy net
-        policy_net = create_noisy_mlp(
-            input_dim=feature_dim,
-            output_dim=pi_layers_dims[-1],
-            net_arch=pi_layers_dims[:-1],
-            activation_fn=activation_fn,
-            num_noisy_layers=1,
+        policy_net = (
+            create_noisy_mlp(
+                input_dim=feature_dim,
+                output_dim=pi_layers_dims[-1],
+                net_arch=pi_layers_dims[:-1],
+                activation_fn=activation_fn,
+                num_noisy_layers=num_noisy_layers,
+            )
+            if len(pi_layers_dims) > 0
+            else []
         )
 
         # Iterate through the value layers and build the value net
-        value_net = create_noisy_mlp(
-            input_dim=feature_dim,
-            output_dim=vf_layers_dims[-1],
-            net_arch=vf_layers_dims[:-1],
-            activation_fn=activation_fn,
-            num_noisy_layers=0,
+        value_net = (
+            create_noisy_mlp(
+                input_dim=feature_dim,
+                output_dim=vf_layers_dims[-1],
+                net_arch=vf_layers_dims[:-1],
+                activation_fn=activation_fn,
+                num_noisy_layers=0,
+            )
+            if len(vf_layers_dims) > 0
+            else []
         )
 
         # Save dim, used to create the distributions
-        self.latent_dim_pi = pi_layers_dims[-1]
-        self.latent_dim_vf = vf_layers_dims[-1]
+        self.latent_dim_pi = (
+            pi_layers_dims[-1] if len(pi_layers_dims) > 0 else feature_dim
+        )
+        self.latent_dim_vf = (
+            vf_layers_dims[-1] if len(vf_layers_dims) > 0 else feature_dim
+        )
 
         # Create networks
         # If the list of layers is empty, the network will just act as an Identity module
