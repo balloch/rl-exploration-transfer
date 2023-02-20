@@ -70,10 +70,21 @@ class NoisyActorCriticPolicy(ActorCriticPolicy):
         )
 
     def _build(self, lr_schedule: Schedule) -> None:
-        if self.num_noisy_layers > 0 and isinstance(
-            self.action_dist, CategoricalDistribution
-        ):
-            self.action_dist = NoisyNetCategoricalDistribution(self.action_space.n)
+        if self.num_noisy_layers > 0:
+            if isinstance(
+                self.action_dist, CategoricalDistribution
+            ):
+                self.action_dist = NoisyNetCategoricalDistribution(self.action_space.n)
+            else:
+                '''
+                To implement more action spaces following these steps:
+                    1. Create a sub class of the distribution and name it Noisy{Distribution Name}
+                    2. Override the proba_distribution_net method and replace all Linear layers with NoisyLayers
+                    3. Add an elif statement to this block as followings --> elif isinstance(self.action_dist, {Distribution Name}):
+                    4. Within the elif block add the following line --> self.action_dist = Noisy{Distribution Name}(self.action_space.n, {any other required args})
+                '''
+                raise NotImplementedError(f"Error: noisy probability distribution, not implement for action space of type {type(self.action_space)}. Must be Discrete.")
+
         return super()._build(lr_schedule)
 
     def _build_mlp_extractor(self) -> None:
