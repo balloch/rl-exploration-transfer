@@ -22,7 +22,6 @@ NUM_NOISY_LAYERS = 2
 
 
 def get_args():
-
     str2bool = lambda s: s.lower() in ["true", "1", "t", "y", "yes", "yeah"]
 
     parser = argparse.ArgumentParser(description="RL")
@@ -46,7 +45,6 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
 
 
 if __name__ == "__main__":
-
     args = get_args()
 
     timestamp = int(time.time())
@@ -82,7 +80,6 @@ if __name__ == "__main__":
     )
 
     def test_model():
-
         total_reward = 0
         eps = 1
         num_steps = 1000
