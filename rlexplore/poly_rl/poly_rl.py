@@ -120,31 +120,31 @@ class PolyRL():
         self.eta = None
 
     def sample_action_algorithm(self, previous_action):
-        # P = torch.FloatTensor(previous_action.shape[0]).uniform_(float(self.min_action_limit), float(self.max_action_limit))
-        # D = torch.dot(P, torch.Tensor(previous_action.reshape(-1))).item()
-        # norm_previous_action = np.linalg.norm(previous_action, ord=2)
-        # V_p = torch.Tensor((D / norm_previous_action ** 2) * previous_action)
-        # V_r = P - V_p
-        # l = np.linalg.norm(V_p.numpy(), ord=2) * np.tan(self.eta)
-        # k = l / np.linalg.norm(V_r.numpy(), ord=2)
-        # Q = k * V_r + V_p
-        # if (D > 0):
-        #     action = Q
-        # else:
-        #     action = -Q
-        # # print('previous_action = ', previous_action)
-        # # print('action = ', action)
-        # # action_dot_product = np.dot(previous_action.reshape(-1), action.reshape(-1))
-        # # print('action_dot_product = ', action_dot_product)
-        # # norm_action =  np.linalg.norm(action, ord=2)
-        # # cos_action = action_dot_product/(norm_previous_action * norm_action)
-        # # print('cos_action = ', cos_action)
-        # action = np.clip(action.numpy(), self.min_action_limit, self.max_action_limit)
-        # self.i += 1
-        # # print('i = ', self.i)
-        # return torch.from_numpy(action)
-        next_action = (previous_action + np.random.randint(-1, 2)) % 4
-        return next_action
+        P = torch.FloatTensor(previous_action.shape[0]).uniform_(float(self.min_action_limit), float(self.max_action_limit))
+        D = torch.dot(P, torch.Tensor(previous_action.reshape(-1))).item()
+        norm_previous_action = np.linalg.norm(previous_action, ord=2)
+        V_p = torch.Tensor((D / norm_previous_action ** 2) * previous_action)
+        V_r = P - V_p
+        l = np.linalg.norm(V_p.numpy(), ord=2) * np.tan(self.eta)
+        k = l / np.linalg.norm(V_r.numpy(), ord=2)
+        Q = k * V_r + V_p
+        if (D > 0):
+            action = Q
+        else:
+            action = -Q
+        # print('previous_action = ', previous_action)
+        # print('action = ', action)
+        # action_dot_product = np.dot(previous_action.reshape(-1), action.reshape(-1))
+        # print('action_dot_product = ', action_dot_product)
+        # norm_action =  np.linalg.norm(action, ord=2)
+        # cos_action = action_dot_product/(norm_previous_action * norm_action)
+        # print('cos_action = ', cos_action)
+        action = np.clip(action.numpy(), self.min_action_limit, self.max_action_limit)
+        self.i += 1
+        # print('i = ', self.i)
+        return torch.from_numpy(action)
+        # next_action = (previous_action + np.random.randint(-1, 2)) % 4
+        # return next_action
 
 
     def update_parameters(self, previous_state, new_state, tensor_board_writer=None):
