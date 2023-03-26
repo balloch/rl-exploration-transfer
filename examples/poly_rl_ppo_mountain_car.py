@@ -11,22 +11,21 @@ from stable_baselines3 import PPO
 from stable_baselines3.common.policies import ActorCriticCnnPolicy
 import time
 
-from rlexplore.poly_rl.poly_rl import PolyRL
+from rlexplore.poly_rl.poly_rl_policy import PolyRLActorCriticCnnPolicy
 
 LOAD_MODEL = False
 TIMESTEPS = 3000000
-ENV_NAME = 'AssaultBullet-v0'
-NUM_NOISY_LAYERS = 2
+ENV_NAME = "MountainCarContinuous-v0"
 
 
 def get_args():
-    parser = argparse.ArgumentParser(description='RL')
-    parser.add_argument('--algo', type=str, default='ppo')
-    parser.add_argument('--env-id', type=str, default=ENV_NAME)
-    parser.add_argument('--total-time-steps', type=int, default=TIMESTEPS)
-    parser.add_argument('--n-steps', type=int, default=128)
+    parser = argparse.ArgumentParser(description="RL")
+    parser.add_argument("--algo", type=str, default="ppo")
+    parser.add_argument("--env-id", type=str, default=ENV_NAME)
+    parser.add_argument("--total-time-steps", type=int, default=TIMESTEPS)
+    parser.add_argument("--n-steps", type=int, default=128)
 
-    parser.add_argument('--gamma', type=float, default=0.99)
+    parser.add_argument("--gamma", type=float, default=0.99)
 
     args = parser.parse_args()
     return args
@@ -44,10 +43,9 @@ if __name__ == "__main__":
     env = gym.make(args.env_id)
 
     num_episodes = int(args.total_time_steps / args.n_steps / args.n_envs)
-    # Create vectorized environments.
 
     model = PPO(
-        policy=ActorCriticCnnPolicy,
+        policy=PolyRLActorCriticCnnPolicy,
         env=env,
         verbose=1,
         learning_rate=0.001,
@@ -60,16 +58,8 @@ if __name__ == "__main__":
         ent_coef=0 if args.noisy_layers else 0.01,
         vf_coef=0.5,
         max_grad_norm=0.5,
-        tensorboard_log="./logs/",
-        policy_kwargs=dict(
-            num_noisy_layers=args.num_noisy_layers if args.noisy_layers else 0
-        ),
-    )
-    poly_rl_alg = PolyRL(
-        gamma=args.gamma, 
-        nb_actions=env.action_space.shape[0], 
-        max_action=float(env.action_space.high[0]),
-        min_action=float(min(env.action_space.low))
+        tensorboard_log=log_path,
+        policy_kwargs=dict(logdir=log_path),
     )
 
     def test_model():
