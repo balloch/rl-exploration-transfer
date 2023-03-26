@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument("--env-id", type=str, default=ENV_NAME)
     parser.add_argument("--total-time-steps", type=int, default=TIMESTEPS)
     parser.add_argument("--n-steps", type=int, default=128)
-    
+
     parser.add_argument("--load-model", type=str2bool, default=LOAD_MODEL)
 
     parser.add_argument("--gamma", type=float, default=0.99)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         ent_coef=0 if args.poly_rl else 0.01,
         vf_coef=0.5,
         max_grad_norm=0.5,
-        tensorboard_log=log_path,
+        tensorboard_log="./logs/",
         policy_kwargs=dict(logdir=log_path),
     )
 
