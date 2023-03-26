@@ -24,7 +24,6 @@ class PolyRLActorCriticPolicy(ActorCriticPolicy):
         observation_space: gym.spaces.Space,
         action_space: gym.spaces.Space,
         lr_schedule: Schedule,
-        logdir,
         net_arch: Optional[List[Union[int, Dict[str, List[int]]]]] = None,
         activation_fn: Type[nn.Module] = nn.Tanh,
         ortho_init: bool = True,
@@ -45,6 +44,7 @@ class PolyRLActorCriticPolicy(ActorCriticPolicy):
         lambda_: float = 0.035,
         gamma: float = 0.99,
         start_steps: int = 10000,
+        logdir=None,
     ):
         super(PolyRLActorCriticPolicy, self).__init__(
             observation_space,
@@ -83,7 +83,10 @@ class PolyRLActorCriticPolicy(ActorCriticPolicy):
             lambda_=lambda_,
         )
         self.counter_actions = 0
+        assert logdir is not None
         self.writer = SummaryWriter(logdir=logdir)
+        self.writer.STOP = True
+        self.previous_action = None
 
     def get_exploration_percentage(self):
         return self.poly_rl.percentage_exploration
@@ -92,19 +95,21 @@ class PolyRLActorCriticPolicy(ActorCriticPolicy):
         self, observation: torch.Tensor, deterministic: bool = False
     ) -> torch.Tensor:
         self.counter_actions += 1
-        self.cur_nb_env_reset += 1
         if self.start_steps < self.counter_actions:
-            return self._predict(observation=observation, deterministic=deterministic)
+            action = super()._predict(
+                observation=observation, deterministic=deterministic
+            )
+            return action
         else:
-            state = np.array(state)
+            state = np.array(observation.cpu())
             self.previous_state = state
-            action = self.poly_rl_alg.select_action(
+            action = self.poly_rl.select_action(
                 state,
                 self.previous_action,
                 tensor_board_writer=self.writer,
                 step_number=self.counter_actions,
             )
-            action = torch.clamp(action, -1, 1).reshape(-1).numpy()
+            action = torch.clamp(action, -1, 1).reshape(-1)
             self.previous_action = action
             return action
 
@@ -116,12 +121,12 @@ class PolyRLActorCriticPolicy(ActorCriticPolicy):
         deterministic: bool = False,
     ):
         if episode_start:
-            self.nb_environment_reset = self.cur_nb_env_reset
+            self.previous_action = None
             self.previous_state = None
-            self.poly_rl_alg.reset_parameters_in_beginning_of_episode(
+            self.poly_rl.reset_parameters_in_beginning_of_episode(
                 self.nb_environment_reset
             )
-        super().predict(observation, state, episode_start, deterministic)
+        return super().predict(observation, state, episode_start, deterministic)
 
 
 class PolyRLActorCriticCnnPolicy(PolyRLActorCriticPolicy):
@@ -149,6 +154,7 @@ class PolyRLActorCriticCnnPolicy(PolyRLActorCriticPolicy):
         sigma_squared: float = 0.00007,
         lambda_: float = 0.035,
         gamma: float = 0.99,
+        logdir=None,
     ):
         super().__init__(
             observation_space,
@@ -173,4 +179,5 @@ class PolyRLActorCriticCnnPolicy(PolyRLActorCriticPolicy):
             sigma_squared,
             lambda_,
             gamma,
+            logdir,
         )

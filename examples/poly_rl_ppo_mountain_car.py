@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 
 curren_dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
@@ -8,24 +9,28 @@ sys.path.append(parent_dir_path)
 import argparse
 import gym
 from stable_baselines3 import PPO
-from stable_baselines3.common.policies import ActorCriticCnnPolicy
 import time
 
-from rlexplore.poly_rl.poly_rl_policy import PolyRLActorCriticCnnPolicy
+from rlexplore.poly_rl.poly_rl_policy import PolyRLActorCriticPolicy
 
 LOAD_MODEL = False
-TIMESTEPS = 3000000
+TIMESTEPS = 1000000
 ENV_NAME = "MountainCarContinuous-v0"
+# ENV_NAME = "Pendulum-v1"
 
 
 def get_args():
+    str2bool = lambda s: s.lower() in ["true", "1", "t", "y", "yes", "yeah"]
     parser = argparse.ArgumentParser(description="RL")
     parser.add_argument("--algo", type=str, default="ppo")
     parser.add_argument("--env-id", type=str, default=ENV_NAME)
     parser.add_argument("--total-time-steps", type=int, default=TIMESTEPS)
     parser.add_argument("--n-steps", type=int, default=128)
+    
+    parser.add_argument("--load-model", type=str2bool, default=LOAD_MODEL)
 
     parser.add_argument("--gamma", type=float, default=0.99)
+    parser.add_argument("--poly-rl", type=str2bool, default=True)
 
     args = parser.parse_args()
     return args
@@ -42,10 +47,10 @@ if __name__ == "__main__":
 
     env = gym.make(args.env_id)
 
-    num_episodes = int(args.total_time_steps / args.n_steps / args.n_envs)
+    num_episodes = int(args.total_time_steps / args.n_steps)
 
     model = PPO(
-        policy=PolyRLActorCriticCnnPolicy,
+        policy=PolyRLActorCriticPolicy,
         env=env,
         verbose=1,
         learning_rate=0.001,
@@ -55,7 +60,7 @@ if __name__ == "__main__":
         gamma=args.gamma,
         gae_lambda=0.95,
         clip_range=0.2,
-        ent_coef=0 if args.noisy_layers else 0.01,
+        ent_coef=0 if args.poly_rl else 0.01,
         vf_coef=0.5,
         max_grad_norm=0.5,
         tensorboard_log=log_path,
@@ -70,6 +75,9 @@ if __name__ == "__main__":
         observation = env.reset()
         for _ in range(num_steps):
             action, _ = model.predict(observation, deterministic=True)
+            action = np.array(action)
+            if action.shape == ():
+                action = action[np.newaxis]
             observation, reward, done, _ = env.step(action)
             total_reward += reward
 
