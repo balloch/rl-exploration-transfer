@@ -9,6 +9,7 @@ sys.path.append(parent_dir_path)
 import argparse
 import gym
 from stable_baselines3 import PPO
+from stable_baselines3.common.policies import ActorCriticPolicy
 import time
 
 from rlexplore.poly_rl.poly_rl_policy import PolyRLActorCriticPolicy
@@ -50,7 +51,7 @@ if __name__ == "__main__":
     num_episodes = int(args.total_time_steps / args.n_steps)
 
     model = PPO(
-        policy=PolyRLActorCriticPolicy,
+        policy=PolyRLActorCriticPolicy if args.poly_rl else ActorCriticPolicy,
         env=env,
         verbose=1,
         learning_rate=0.001,
@@ -64,7 +65,7 @@ if __name__ == "__main__":
         vf_coef=0.5,
         max_grad_norm=0.5,
         tensorboard_log="./logs/",
-        policy_kwargs=dict(logdir=log_path),
+        policy_kwargs=dict(logdir=log_path) if args.poly_rl else dict(),
     )
 
     def test_model():
