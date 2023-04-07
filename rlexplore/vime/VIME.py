@@ -56,7 +56,7 @@ class VIME():
         self.max_grad_norm = max_grad_norm
         self.use_clipped_value_loss = use_clipped_value_loss
 
-        self.optimizer = optim.Adam(actor_critic.parameters(), lr=lr, eps=eps)
+        self.optimizer = optim.Adam(self.parameters(), lr=lr, eps=eps)
 
         self.kl_q_len = kl_q_len
         self._kl_mean = deque(maxlen=self.kl_q_len)
