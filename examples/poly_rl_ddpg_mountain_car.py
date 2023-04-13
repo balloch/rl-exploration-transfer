@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     timestamp = int(time.time())
 
-    model_name = f"{args.env_id.lower().replace('-', '_')}_polyrl_cnn_ppo_{args.total_time_steps}_{timestamp}"
+    model_name = f"{args.env_id.lower().replace('-', '_')}{'_poly_rl' if args.poly_rl else ''}_ddpg_{args.total_time_steps}_{timestamp}"
     model_file_path = f"models/{model_name}"
     log_path = f"logs/{model_name}"
 
