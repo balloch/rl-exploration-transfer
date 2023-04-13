@@ -130,7 +130,7 @@ class PolyRLActorCriticPolicy(ActorCriticPolicy):
             self.poly_rl.reset_parameters_in_beginning_of_episode(
                 self.nb_environment_reset
             )
-        return super().predict(observation, state, episode_start, deterministic)        
+        return super().predict(observation, state, episode_start, deterministic)
 
 
 class PolyRLActorCriticCnnPolicy(PolyRLActorCriticPolicy):
@@ -285,7 +285,7 @@ class PolyRLDDPGPolicy(DDPGPolicy):
             self.poly_rl.reset_parameters_in_beginning_of_episode(
                 self.nb_environment_reset
             )
-        return super().predict(observation, state, episode_start, deterministic)  
+        return super().predict(observation, state, episode_start, deterministic)
 
 
 class PolyRLDDPGCNNPolicy(PolyRLDDPGPolicy):
