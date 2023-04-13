@@ -56,7 +56,7 @@ if __name__ == "__main__":
         policy=PolyRLSACPolicy if args.poly_rl else SACPolicy,
         env=env,
         verbose=1,
-        learning_rate=0.01,
+        learning_rate=0.001,
         batch_size=256,
         gamma=args.gamma,
         tensorboard_log="./logs/",
