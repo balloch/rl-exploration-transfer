@@ -69,8 +69,9 @@ if __name__ == "__main__":
         ent_coef=0,
         vf_coef=0.5,
         max_grad_norm=0.5,
-        tensorboard_log="./logs/",
+        tensorboard_log="../rl-exploration-transfer/logs/",
         policy_kwargs=dict(),
+        
     )
 
     def test_model():
