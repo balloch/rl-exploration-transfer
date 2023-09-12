@@ -1,3 +1,6 @@
+# Project specific
+logs/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -26,6 +29,10 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# IDE stuff
+.idea/
+.vscode/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

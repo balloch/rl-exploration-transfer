@@ -14,8 +14,25 @@ from stable_baselines3.common.utils import set_random_seed
 
 # Register custom envs
 import rl_zoo3.import_envs  # noqa: F401 pytype: disable=import-error
-from rl_zoo3.exp_manager import ExperimentManager
+from exp_manager import ExperimentManager
 from rl_zoo3.utils import ALGOS, StoreDict
+
+
+
+#####################
+## If we need to add algos add them here. For example:
+# from sbx import DQN, PPO, SAC, TQC, DroQ
+
+
+# rl_zoo3.ALGOS["tqc"] = TQC
+# rl_zoo3.ALGOS["droq"] = DroQ
+# rl_zoo3.ALGOS["sac"] = SAC
+# rl_zoo3.ALGOS["ppo"] = PPO
+# rl_zoo3.ALGOS["dqn"] = DQN
+# rl_zoo3.train.ALGOS = rl_zoo3.ALGOS
+# rl_zoo3.exp_manager.ALGOS = rl_zoo3.ALGOS
+#####################
+
 
 
 def train() -> None:
@@ -99,57 +116,89 @@ def train() -> None:
         "Default is 1 evaluation per 100k timesteps.",
         type=int,
         default=None,
-    )
-    parser.add_argument(
-        "--storage", help="Database storage path if distributed optimization should be used", type=str, default=None
-    )
-    parser.add_argument("--study-name", help="Study name for distributed optimization", type=str, default=None)
-    parser.add_argument("--verbose", help="Verbose mode (0: no output, 1: INFO)", default=1, type=int)
-    parser.add_argument(
-        "--gym-packages",
+        )
+    parser.add_argument("--storage", 
+        type=str, 
+        default=None,
+        help="Database storage path if distributed optimization should be used", 
+        )
+    parser.add_argument("--study-name", 
+        type=str, 
+        default=None,
+        help="Study name for distributed optimization", 
+        )
+    parser.add_argument("--verbose",
+        default=1, 
+        type=int,
+        help="Verbose mode (0: no output, 1: INFO)", 
+        )
+    parser.add_argument("--gym-packages",
         type=str,
         nargs="+",
         default=[],
         help="Additional external Gym environment package modules to import",
-    )
-    parser.add_argument(
-        "--env-kwargs", type=str, nargs="+", action=StoreDict, help="Optional keyword argument to pass to the env constructor"
-    )
-    parser.add_argument(
-        "-params",
-        "--hyperparams",
+        )
+    parser.add_argument("--env-kwargs", 
+        type=str, 
+        nargs="+", 
+        action=StoreDict, 
+        help="Optional keyword argument to pass to the env constructor"
+        )
+    parser.add_argument("-params","--hyperparams",
         type=str,
         nargs="+",
         action=StoreDict,
         help="Overwrite hyperparameter (e.g. learning_rate:0.01 train_freq:10)",
-    )
-    parser.add_argument(
-        "-conf",
-        "--conf-file",
+        )
+    parser.add_argument("-conf","--config-file",
         type=str,
         default=None,
         help="Custom yaml file or python package from which the hyperparameters will be loaded."
         "We expect that python packages contain a dictionary called 'hyperparams' which contains a key for each environment.",
-    )
-    parser.add_argument("-uuid", "--uuid", action="store_true", default=False, help="Ensure that the run has a unique ID")
-    parser.add_argument(
-        "--track",
+        )
+    parser.add_argument("-uuid", "--uuid", 
+        action="store_true", 
+        default=False, 
+        help="Ensure that the run has a unique ID"
+        )
+    parser.add_argument("--track",
         action="store_true",
         default=False,
         help="if toggled, this experiment will be tracked with Weights and Biases",
-    )
-    parser.add_argument("--wandb-project-name", type=str, default="sb3", help="the wandb's project name")
-    parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team) of wandb's project")
+        )
+    parser.add_argument("--wandb-project-name", 
+        type=str, 
+        default="sb3", 
+        help="the wandb's project name"
+        )
     parser.add_argument(
-        "-P",
-        "--progress",
+        "--wandb-entity", 
+        type=str, 
+        default=None, 
+        help="the entity (team) of wandb's project"
+        )
+    parser.add_argument("-P","--progress",
         action="store_true",
         default=False,
         help="if toggled, display a progress bar using tqdm and rich",
-    )
-    parser.add_argument(
-        "-tags", "--wandb-tags", type=str, default=[], nargs="+", help="Tags for wandb run, e.g.: -tags optimized pr-123"
-    )
+        )
+    parser.add_argument("-tags", "--wandb-tags", 
+        type=str, 
+        default=[], 
+        nargs="+", 
+        help="Tags for wandb run, e.g.: -tags optimized pr-123"
+        )
+    parser.add_argument("--manual-training",
+        action="store_true",
+        default=False,
+        help="if toggled, this experiment will be trained not using the learn loop",
+        )
+    parser.add_argument("--exploration",
+        type=str,
+        default=None,
+        help="if toggled, this experiment will be trained not using the learn loop",
+        )
+
 
     args = parser.parse_args()
 
@@ -248,7 +297,7 @@ def train() -> None:
         n_eval_envs=args.n_eval_envs,
         no_optim_plots=args.no_optim_plots,
         device=args.device,
-        config=args.conf_file,
+        config=args.config_file,
         show_progress=args.progress,
     )
 
@@ -263,8 +312,11 @@ def train() -> None:
             run.config.setdefaults(vars(args))
 
         # Normal training
-        if model is not None:
+        if model is not None and args.manual_training is False:
             exp_manager.learn(model)
+            exp_manager.save_trained_model(model)
+        else:
+            exp_manager.manual_training(model)
             exp_manager.save_trained_model(model)
     else:
         exp_manager.hyperparameters_optimization()

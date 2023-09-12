@@ -6,6 +6,7 @@ import time
 import warnings
 from collections import OrderedDict
 from pathlib import Path
+from collections import deque
 from pprint import pprint
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
@@ -32,7 +33,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 from stable_baselines3.common.preprocessing import is_image_space, is_image_space_channels_first
 from stable_baselines3.common.sb2_compat.rmsprop_tf_like import RMSpropTFLike  # noqa: F401
-from stable_baselines3.common.utils import constant_fn
+from stable_baselines3.common.utils import constant_fn, get_device
 from stable_baselines3.common.vec_env import (
     DummyVecEnv,
     SubprocVecEnv,
@@ -51,6 +52,8 @@ import rl_zoo3.import_envs  # noqa: F401 pytype: disable=import-error
 from rl_zoo3.callbacks import SaveVecNormalizeCallback, TrialEvalCallback
 from rl_zoo3.hyperparams_opt import HYPERPARAMS_SAMPLER
 from rl_zoo3.utils import ALGOS, get_callback_list, get_class_by_name, get_latest_run_id, get_wrapper_class, linear_schedule
+
+from rlexplore.re3 import RE3
 
 
 class ExperimentManager:
@@ -104,7 +107,7 @@ class ExperimentManager:
         self.env_name = EnvironmentName(env_id)
         # Custom params
         self.custom_hyperparams = hyperparams
-        if (Path(__file__).parent / "hyperparams").is_dir():
+        if Path(__file__).parent.joinpath("hyperparams").is_dir():
             # Package version
             default_path = Path(__file__).parent
         else:
@@ -203,25 +206,14 @@ class ExperimentManager:
             return None
         else:
             # Train an agent from scratch
-            if self.algo in ALGOS:
-                model = ALGOS[self.algo](
-                    env=env,
-                    tensorboard_log=self.tensorboard_log,
-                    seed=self.seed,
-                    verbose=self.verbose,
-                    device=self.device,
-                    **self._hyperparams,
-                )
-            else:
-                # TODO balloch: get algo from config
-                model = ALGOS[self.algo](
-                    env=env,
-                    tensorboard_log=self.tensorboard_log,
-                    seed=self.seed,
-                    verbose=self.verbose,
-                    device=self.device,
-                    **self._hyperparams,
-                )
+            model = ALGOS[self.algo](
+                env=env,
+                tensorboard_log=self.tensorboard_log,
+                seed=self.seed,
+                verbose=self.verbose,
+                device=self.device,
+                **self._hyperparams,
+            )
 
         self._save_config(saved_hyperparams)
         return model, saved_hyperparams
@@ -245,6 +237,87 @@ class ExperimentManager:
 
         try:
             model.learn(self.n_timesteps, **kwargs)
+        except KeyboardInterrupt:
+            # this allows to save the model when interrupting training
+            pass
+        finally:
+            # Clean progress bar
+            if len(self.callbacks) > 0:
+                self.callbacks[0].on_training_end()
+            # Release resources
+            try:
+                model.env.close()
+            except EOFError:
+                pass
+        
+    def manual_training(self, model: BaseAlgorithm) -> None:
+        """
+        For training without using the learn loop
+        :param model: an initialized RL model
+        """
+        kwargs = {}
+        if self.log_interval > -1:
+            kwargs = {"log_interval": self.log_interval}
+
+        if len(self.callbacks) > 0:
+            kwargs["callback"] = self.callbacks
+
+        # Special case for ARS
+        if self.algo == "ars" and self.n_envs > 1:
+            kwargs["async_eval"] = AsyncEval(
+                [lambda: self.create_envs(n_envs=1, no_log=True) for _ in range(self.n_envs)], model.policy
+            )
+
+        ######## manual training ########
+        num_episodes = int(self.n_timesteps / model.n_steps / self.n_envs)
+        train_envs = model.env
+
+        ## Create Exploration module.
+        if self.args.exploration == 're3':  # TODO balloch: make this a lookup
+            expl_bonus = RE3(
+                obs_shape=train_envs.observation_space.shape, 
+                action_shape=train_envs.action_space.shape, 
+                device=get_device(self.device), 
+                latent_dim=128, 
+                beta=1e-2, 
+                kappa=1e-5)
+
+        model.ep_info_buffer = deque(maxlen=10)
+        _, callback = model._setup_learn(
+            total_timesteps=self.n_timesteps, 
+            )
+
+        # t_s = time.perf_counter()  # Residual
+        all_eps_rewards = list()
+        eps_rewards = deque([0.] * 10, maxlen=10)
+        try:
+            ## Training loop
+            for i in range(num_episodes):
+                model.collect_rollouts(
+                    env=train_envs,
+                    rollout_buffer=model.rollout_buffer,
+                    n_rollout_steps=model.n_steps,
+                    callback=callback
+                )
+                # Compute intrinsic rewards.
+                if self.args.exploration is not None:
+                    intrinsic_rewards = expl_bonus.compute_irs(
+                        rollouts={'observations': model.rollout_buffer.observations},
+                        time_steps=i * model.n_steps * self.n_envs,
+                        k=3)
+                    model.rollout_buffer.rewards += intrinsic_rewards[:, :, 0]
+                # Update policy using the currently gathered rollout buffer.
+                model.train()
+                # t_e = time.perf_counter()  # Residual
+
+                eps_rewards.extend([ep_info["r"] for ep_info in model.ep_info_buffer])
+                all_eps_rewards.append(list(eps_rewards.copy()))
+                # times_steps = i * model.n_steps * self.n_envs  # Residual
+
+
+
+
+
         except KeyboardInterrupt:
             # this allows to save the model when interrupting training
             pass
@@ -687,28 +760,15 @@ class ExperimentManager:
 
         if "policy_kwargs" in hyperparams.keys():
             del hyperparams["policy_kwargs"]
-        if self.algo in ALGOS:
-            model = ALGOS[self.algo].load(
-                self.trained_agent,
-                env=env,
-                seed=self.seed,
-                tensorboard_log=self.tensorboard_log,
-                verbose=self.verbose,
-                device=self.device,
-                **hyperparams,
-            )
-        else:
-            # TODO balloch: get algo from config
-            model = ALGOS[self.algo].load(
-                self.trained_agent,
-                env=env,
-                seed=self.seed,
-                tensorboard_log=self.tensorboard_log,
-                verbose=self.verbose,
-                device=self.device,
-                **hyperparams,
-            )
-
+        model = ALGOS[self.algo].load(
+            self.trained_agent,
+            env=env,
+            seed=self.seed,
+            tensorboard_log=self.tensorboard_log,
+            verbose=self.verbose,
+            device=self.device,
+            **hyperparams,
+        )
 
         replay_buffer_path = os.path.join(os.path.dirname(self.trained_agent), "replay_buffer.pkl")
 
@@ -771,28 +831,15 @@ class ExperimentManager:
         if self.verbose >= 2:
             trial_verbosity = self.verbose
 
-        if self.algo in ALGOS:
-            model = ALGOS[self.algo](
-                env=env,
-                tensorboard_log=None,
-                # We do not seed the trial
-                seed=None,
-                verbose=trial_verbosity,
-                device=self.device,
-                **kwargs,
-            )
-        else:
-            # TODO balloch: get algo from config
-            model = ALGOS[self.algo](
-                env=env,
-                tensorboard_log=None,
-                # We do not seed the trial
-                seed=None,
-                verbose=trial_verbosity,
-                device=self.device,
-                **kwargs,
-            )
-
+        model = ALGOS[self.algo](
+            env=env,
+            tensorboard_log=None,
+            # We do not seed the trial
+            seed=None,
+            verbose=trial_verbosity,
+            device=self.device,
+            **kwargs,
+        )
 
         eval_env = self.create_envs(n_envs=self.n_eval_envs, eval_env=True)
 
@@ -902,7 +949,10 @@ class ExperimentManager:
                         ],
                     )
             else:
-                study.optimize(self.objective, n_jobs=self.n_jobs, n_trials=self.n_trials)
+                study.optimize(
+                    self.objective, 
+                    n_jobs=self.n_jobs, 
+                    n_trials=self.n_trials)
         except KeyboardInterrupt:
             pass
 
