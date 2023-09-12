@@ -29,8 +29,8 @@ from rl_zoo3.utils import ALGOS, StoreDict
 # rl_zoo3.ALGOS["sac"] = SAC
 # rl_zoo3.ALGOS["ppo"] = PPO
 # rl_zoo3.ALGOS["dqn"] = DQN
-# rl_zoo3.train.ALGOS = rl_zoo3.ALGOS
-# rl_zoo3.exp_manager.ALGOS = rl_zoo3.ALGOS
+rl_zoo3.train.ALGOS = rl_zoo3.ALGOS
+rl_zoo3.exp_manager.ALGOS = rl_zoo3.ALGOS
 #####################
 
 
