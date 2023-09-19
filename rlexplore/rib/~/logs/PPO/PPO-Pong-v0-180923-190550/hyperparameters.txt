@@ -1,0 +1,2 @@
+Start time: 180923-190550
+Namespace(checkpoint_every=10, discounting=0.99, enable_atari_wrapper=True, enable_cuda=False, env='Pong-v0', episodes_per_epoch=32, epochs=50, epsilon=0.1, grad_norm_clip=40.0, log_tensorboard=False, logdir='~/logs/PPO/', max_traj_length=1000, mode='train', n_policy_updates=20, n_value_updates=20, p_lr=0.001, render=False, v_lr=0.001, verbose=False, xpid=None)
