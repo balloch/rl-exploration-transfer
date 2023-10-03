@@ -18,12 +18,16 @@ if __name__ == "__main__":
     params = get_params()
 
     #test_env = gym.make(params["env_name"])
-    env = gymnasium.make(params["env_name"])
+    env = gymnasium.make(params["env_name"],render_mode='rgb_array')
+
     print(params['env_name'])
+    
     #env = gym.make('MiniGrid-DoorKey-6x6-v0')
     env = minigrid.wrappers.RGBImgPartialObsWrapper(env)
-    env = minigrid.wrappers.FlatObsWrapper(env)
+    #env = minigrid.wrappers.FlatObsWrapper(env)
     obs, _ = env.reset()
+    print(obs['image'].flatten())
+    obs = obs['image'].flatten()
     n_states = obs.shape[0]
     ACTION_SPACE_LIST = [0,1,2]
     ACTION_SPACE= len(ACTION_SPACE_LIST)
@@ -70,6 +74,7 @@ if __name__ == "__main__":
         for episode in tqdm(range(1 + min_episode, params["max_n_episodes"] + 1)):
             z = np.random.choice(params["n_skills"], p=p_z)
             state, _ = env.reset()
+            state = state['image'].flatten()
             state = concat_state_latent(state, z, params["n_skills"])
             episode_reward = 0
             logq_zses = []
@@ -79,6 +84,7 @@ if __name__ == "__main__":
 
                 action =  round(agent.choose_action(state)[0])#agent.choose_action(state)
                 next_state, reward, done, _, _ = env.step(action)
+                next_state = next_state['image'].flatten()
                 next_state = concat_state_latent(next_state, z, params["n_skills"])
                 agent.store(state, z, done, action, next_state)
                 logq_zs = agent.train()
@@ -96,11 +102,11 @@ if __name__ == "__main__":
                        z,
                        sum(logq_zses) / len(logq_zses),
                        step,
-                       np.random.get_state()
+                       np.random.get_state(),
                        #env.np_random.get_state(),
                        #env.observation_space.np_random.get_state(),
                        #env.action_space.np_random.get_state(),
-                       #*agent.get_rng_states(),
+                       #*agent.get_rng_states()
                        )
 
     else:

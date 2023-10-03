@@ -29,6 +29,7 @@ class Play_Discrete:
         for z in range(self.n_skills):
             video_writer = cv2.VideoWriter(f"Vid/skill{z}" + ".avi", self.fourcc, 50.0, (250, 250))
             s, _ = self.env.reset()
+            s = s['image'].flatten()
             s = self.concat_state_latent(s, z, self.n_skills)
             episode_reward = 0
             done = False
@@ -39,19 +40,21 @@ class Play_Discrete:
                 print(action)
                 #action = np.argmax(action)
                 s_, r, done, _, _ = self.env.step(action)
-                
+                s_ = s_['image'].flatten()
                 s_ = self.concat_state_latent(s_, z, self.n_skills)
                 episode_reward += r
                 if done or i == 200:
                     break
                 s = s_
-                #I = self.env.render(mode='rgb_array')
-                #I = cv2.cvtColor(I, cv2.COLOR_RGB2BGR)
-                #I = cv2.resize(I, (250, 250))
-                #video_writer.write(I)
+                I = self.env.render()#mode='rgb_array')
+              
+                I = cv2.cvtColor(I, cv2.COLOR_RGB2BGR)
+                I = cv2.resize(I, (250, 250))
+                print(I)
+                video_writer.write(I)
                 i+=1
                 
             print(f"skill: {z}, action: {action},episode reward:{episode_reward:.1f}")
-            #video_writer.release()
+            video_writer.release()
         self.env.close()
-        #cv2.destroyAllWindows()
+        cv2.destroyAllWindows()

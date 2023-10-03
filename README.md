@@ -108,6 +108,14 @@ python3 main.py --mem_size=1000000 --env_name="Hopper-v3" --interval=100 --do_tr
 ```shell
 python3 main.py --mem_size=1000000 --env_name="Hopper-v3" --interval=100 --do_train --n_skills=20 --train_from_scratch
 ```
+- **For minigrid and discrete env purposes.**
+```shell
+python3 main_discrete.py --mem_size=100000 --env_name="MiniGrid-LavaGapS5-v0" --interval=100 --do_train --n_skills=20 --train_from_scratch
+```
+- **For testing minigrid, and generating videos**
+```shell
+python3 main_discrete.py --mem_size=100000 --env_name="MiniGrid-LavaGapS5-v0" --interval=100  --n_skills=20 
+```
 ### An important Note!!!
 - **When I tried to keep training from checkpoints to continue my previous run, I observed some undesirable behavior from the discriminator that its loss rapidly converged towards 0 however, after some epochs it again returned to its correct previous training phase. I suspect since at the beginning of training from checkpoints the replay memory is empty and familiar experiences (according to the policy) gradually get added to it, the trained discriminator from the previous run can easily recognize their true skills until the replay memory gets populated big enough and contains newer and more novel transitions. Thus, I recommend running your whole training monotonically and avoid using checkpoints and successive pausing though, it is been provided.**
 
