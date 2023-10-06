@@ -9,6 +9,7 @@ import argparse
 import gym
 import gym_minigrid
 from stable_baselines3.common.policies import ActorCriticCnnPolicy
+from stable_baselines3 import PPO
 
 import time
 
@@ -45,7 +46,11 @@ if __name__ == "__main__":
 
     timestamp = int(time.time())
 
-    model_name = f"{args.env_id.lower().replace('-', '_')}_ddes_cnn_ppo_{args.total_time_steps}_{timestamp}"
+    USE_DDES = True
+
+    model_name_insert = "ddes_cnn_ppo" if USE_DDES else "cnn_ppo"
+
+    model_name = f"{args.env_id.lower().replace('-', '_')}_{model_name_insert}_{args.total_time_steps}_{timestamp}"
     model_file_path = f"models/{model_name}"
     log_path = f"../rl-exploration-transfer/logs/{model_name}"
 
@@ -55,7 +60,9 @@ if __name__ == "__main__":
 
     env = StableBaselinesWrapper(env)
 
-    model = DDESPPO(
+    model_cls = DDESPPO if USE_DDES else PPO
+
+    model = model_cls(
         policy=ActorCriticCnnPolicy,
         env=env,
         verbose=1,
@@ -66,12 +73,11 @@ if __name__ == "__main__":
         gamma=0.99,
         gae_lambda=0.95,
         clip_range=0.2,
-        ent_coef=0,
+        ent_coef=0 if USE_DDES else 0.01,
         vf_coef=0.5,
         max_grad_norm=0.5,
         tensorboard_log="../rl-exploration-transfer/logs/",
         policy_kwargs=dict(),
-        
     )
 
     def test_model():
