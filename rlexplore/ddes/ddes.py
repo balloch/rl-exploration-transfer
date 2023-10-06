@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Type, Union, Tuple
+from typing import Any, Dict, Optional, Type, Union
 
 import numpy as np
 
@@ -6,54 +6,11 @@ import torch as th
 from torch.nn import functional as F
 import gym
 
-from stable_baselines3.ppo import PPO, SAC
+from stable_baselines3 import PPO
 from stable_baselines3.common.type_aliases import GymEnv, Schedule
-from stable_baselines3.common.policies import ActorCriticPolicy, SACPolicy
-from stable_baselines3.common.utils import polyak_update
-from stable_baselines3.common.noise import ActionNoise
+from stable_baselines3.common.policies import ActorCriticPolicy
 
-
-from stable_baselines3.common.utils import explained_variance, get_schedule_fn
-
-from collections import deque
-import random
-
-
-class ReplayBuffer(object):
-    def __init__(self, maxlength):
-        """
-        maxlength: max number of tuples to store in the buffer
-        if there are more tuples than maxlength, pop out the oldest tuples
-        """
-        self.buffer = deque()
-        self.number = 0
-        self.maxlength = maxlength
-
-    def append(self, experience):
-        """
-        this function implements appending new experience tuple
-        experience: a tuple of the form (s,a,r,s^\prime)
-        """
-        self.buffer.append(experience)
-        self.number += 1
-
-    def pop(self):
-        """
-        pop out the oldest tuples if self.number > self.maxlength
-        """
-        while self.number > self.maxlength:
-            self.buffer.popleft()
-            self.number -= 1
-
-    def sample(self, batchsize):
-        """
-        this function samples 'batchsize' experience tuples
-        batchsize: size of the minibatch to be sampled
-        return: a list of tuples of form (s,a,r,s^\prime)
-        """
-        batch = random.sample(self.buffer, batchsize)
-
-        return batch
+from stable_baselines3.common.utils import explained_variance
 
 
 class DDESPPO(PPO):
@@ -82,13 +39,13 @@ class DDESPPO(PPO):
         seed: Optional[int] = None,
         device: Union[th.device, str] = "auto",
         _init_setup_model: bool = True,
-        alpha=1e-3,
-        beta=1e-3,
-        delta=0.030,
+        delta=0.02,
+        nu=0.01,
         numtrajs=15,
         maxlength=5,
         exploration_alpha=0.1,
-        max_dist=10,
+        max_alpha=10,
+        max_dist=0.5,
     ):
         super().__init__(
             policy=policy,
@@ -115,13 +72,21 @@ class DDESPPO(PPO):
             device=device,
             _init_setup_model=_init_setup_model,
         )
-        self.alpha = alpha
-        self.beta = beta
         self.delta = delta
         self.numtrajs = numtrajs
         self.maxlength = maxlength
         self.exploration_alpha = exploration_alpha
         self.max_dist = max_dist
+        self.nu = nu
+        self.max_alpha = max_alpha
+
+        self.policy_buffer = [self.policy_class(
+            self.observation_space, self.action_space, self.lr_schedule, use_sde=self.use_sde, **self.policy_kwargs
+        ) for _ in range(self.maxlength)]
+        for policy in self.policy_buffer:
+            policy.to(self.device)
+            policy.load_state_dict(self.policy.state_dict())
+        self.cur_policy_buffer_idx = 0
 
     def train(self) -> None:
         """
@@ -178,29 +143,32 @@ class DDESPPO(PPO):
                 )
                 policy_loss = -th.min(policy_loss_1, policy_loss_2).mean()
 
-                log_prob_diff = [
-                    log_prob[self.maxlength :] - log_prob[i : -self.maxlength + i]
-                    for i in range(self.maxlength)
-                ]
-                ddes_kl_div = th.mean((th.exp(log_prob_diff[0]) - 1) - log_prob_diff[0])
-                for i in range(1, self.maxlength):
-                    ddes_kl_div += th.mean(
-                        (th.exp(log_prob_diff[i]) - 1) - log_prob_diff[i]
-                    )
-                ddes_kl_div /= self.maxlength
+                policy_distributions = self.policy.get_distribution(rollout_data.observations)
+                policy_buffer_distributions = [policy.get_distribution(rollout_data.observations) for policy in self.policy_buffer]
 
-                if ddes_kl_div.item() < self.delta:
-                    self.exploration_alpha *= 1.01
-                else:
-                    self.exploration_alpha *= 0.99
+                ddes_kl_div = th.Tensor([
+                    F.kl_div(policy_distributions.distribution.logits, distribution.distribution.logits, reduction="mean", log_target=True) 
+                    for distribution in policy_buffer_distributions
+                ]).mean() * policy_distributions.distribution.logits.shape[1]
 
-                print(self.exploration_alpha)
+                threshold_term = ddes_kl_div.item()
+
+                alpha_update_dir = 1 if threshold_term < self.delta else -1
+                max_alpha_mult = (1 - self.exploration_alpha / self.max_alpha) if self.max_alpha is not None else 1
+                self.exploration_alpha *= 1 + alpha_update_dir * self.nu * max_alpha_mult
+
+                ddes_kl_div = th.nan_to_num(
+                    ddes_kl_div, neginf=-self.max_dist, posinf=self.max_dist
+                )
 
                 ddes_kl_div = th.clip(
                     ddes_kl_div, min=-self.max_dist, max=self.max_dist
                 )
 
                 ddes_exploration_loss = -self.exploration_alpha * ddes_kl_div
+
+                # print(self.exploration_alpha, threshold_term, self.delta)
+                
 
                 # Logging
                 pg_losses.append(policy_loss.item())
@@ -264,6 +232,9 @@ class DDESPPO(PPO):
                 )
                 self.policy.optimizer.step()
 
+            self.policy_buffer[self.cur_policy_buffer_idx].load_state_dict(self.policy.state_dict())
+            self.cur_policy_buffer_idx = (self.cur_policy_buffer_idx + 1) % self.maxlength
+
             self._n_updates += 1
             if not continue_training:
                 break
@@ -287,198 +258,3 @@ class DDESPPO(PPO):
         self.logger.record("train/clip_range", clip_range)
         if self.clip_range_vf is not None:
             self.logger.record("train/clip_range_vf", clip_range_vf)
-
-
-class DDESSAC(SAC):
-    def __init__(
-        self,
-        policy: Union[str, Type[SACPolicy]],
-        env: Union[GymEnv, str],
-        learning_rate: Union[float, Schedule] = 3e-4,
-        buffer_size: int = 1_000_000,  # 1e6
-        learning_starts: int = 100,
-        batch_size: int = 256,
-        tau: float = 0.005,
-        gamma: float = 0.99,
-        train_freq: Union[int, Tuple[int, str]] = 1,
-        gradient_steps: int = 1,
-        action_noise: Optional[ActionNoise] = None,
-        replay_buffer_class: Optional[Type[ReplayBuffer]] = None,
-        replay_buffer_kwargs: Optional[Dict[str, Any]] = None,
-        optimize_memory_usage: bool = False,
-        ent_coef: Union[str, float] = "auto",
-        target_update_interval: int = 1,
-        target_entropy: Union[str, float] = "auto",
-        use_sde: bool = False,
-        sde_sample_freq: int = -1,
-        use_sde_at_warmup: bool = False,
-        stats_window_size: int = 100,
-        tensorboard_log: Optional[str] = None,
-        policy_kwargs: Optional[Dict[str, Any]] = None,
-        verbose: int = 0,
-        seed: Optional[int] = None,
-        device: Union[th.device, str] = "auto",
-        _init_setup_model: bool = True,
-        alpha=1e-3,
-        beta=1e-3,
-        delta=0.030,
-        numtrajs=15,
-        exploration_alpha=0.1,
-        max_dist=10,
-    ):
-        super().__init__(
-            policy=policy,
-            env=env,
-            learning_rate=learning_rate,
-            buffer_size=buffer_size,
-            learning_starts=learning_starts,
-            batch_size=batch_size,
-            tau=tau,
-            gamma=gamma,
-            train_freq=train_freq,
-            gradient_steps=gradient_steps,
-            action_noise=action_noise,
-            replay_buffer_class=replay_buffer_class,
-            replay_buffer_kwargs=replay_buffer_kwargs,
-            optimize_memory_usage=optimize_memory_usage,
-            ent_coef=ent_coef,
-            target_update_interval=target_update_interval,
-            target_entropy=target_entropy,
-            use_sde=use_sde,
-            sde_sample_freq=sde_sample_freq,
-            use_sde_at_warmup=use_sde_at_warmup,
-            stats_window_size=stats_window_size,
-            tensorboard_log=tensorboard_log,
-            policy_kwargs=policy_kwargs,
-            verbose=verbose,
-            seed=seed,
-            device=device,
-            _init_setup_model=_init_setup_model,
-        )
-        self.alpha = alpha
-        self.beta = beta
-        self.delta = delta
-        self.numtrajs = numtrajs
-        self.exploration_alpha = exploration_alpha
-        self.max_dist = max_dist
-
-    def train(self, gradient_steps: int, batch_size: int = 64) -> None:
-        """
-        Update policy using the currently gathered rollout buffer.
-        """
-        # Switch to train mode (this affects batch norm / dropout)
-        self.policy.set_training_mode(True)
-        # Update optimizers learning rate
-        optimizers = [self.actor.optimizer, self.critic.optimizer]
-        if self.ent_coef_optimizer is not None:
-            optimizers += [self.ent_coef_optimizer]
-
-        # Update learning rate according to lr schedule
-        self._update_learning_rate(optimizers)
-
-        ent_coef_losses, ent_coefs = [], []
-        actor_losses, critic_losses = [], []
-
-        for gradient_step in range(gradient_steps):
-            # Sample replay buffer
-            replay_data = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)  # type: ignore[union-attr]
-
-            # We need to sample because `log_std` may have changed between two gradient steps
-            if self.use_sde:
-                self.actor.reset_noise()
-
-            # Action by the current actor for the sampled state
-            actions_pi, log_prob = self.actor.action_log_prob(replay_data.observations)
-            log_prob = log_prob.reshape(-1, 1)
-
-            ent_coef_loss = None
-            if self.ent_coef_optimizer is not None and self.log_ent_coef is not None:
-                # Important: detach the variable from the graph
-                # so we don't change it with other losses
-                # see https://github.com/rail-berkeley/softlearning/issues/60
-                ent_coef = th.exp(self.log_ent_coef.detach())
-                ent_coef_loss = -(self.log_ent_coef * (log_prob + self.target_entropy).detach()).mean()
-                ent_coef_losses.append(ent_coef_loss.item())
-            else:
-                ent_coef = self.ent_coef_tensor
-
-            ent_coefs.append(ent_coef.item())
-
-            # Optimize entropy coefficient, also called
-            # entropy temperature or alpha in the paper
-            if ent_coef_loss is not None and self.ent_coef_optimizer is not None:
-                self.ent_coef_optimizer.zero_grad()
-                ent_coef_loss.backward()
-                self.ent_coef_optimizer.step()
-
-            with th.no_grad():
-                # Select action according to policy
-                next_actions, next_log_prob = self.actor.action_log_prob(replay_data.next_observations)
-                # Compute the next Q values: min over all critics targets
-                next_q_values = th.cat(self.critic_target(replay_data.next_observations, next_actions), dim=1)
-                next_q_values, _ = th.min(next_q_values, dim=1, keepdim=True)
-                # add entropy term
-                next_q_values = next_q_values - ent_coef * next_log_prob.reshape(-1, 1)
-                # td error + entropy term
-                target_q_values = replay_data.rewards + (1 - replay_data.dones) * self.gamma * next_q_values
-
-            # Get current Q-values estimates for each critic network
-            # using action from the replay buffer
-            current_q_values = self.critic(replay_data.observations, replay_data.actions)
-
-            # Compute critic loss
-            critic_loss = 0.5 * sum(F.mse_loss(current_q, target_q_values) for current_q in current_q_values)
-            assert isinstance(critic_loss, th.Tensor)  # for type checker
-            critic_losses.append(critic_loss.item())  # type: ignore[union-attr]
-
-            # Optimize the critic
-            self.critic.optimizer.zero_grad()
-            critic_loss.backward()
-            self.critic.optimizer.step()
-
-            # Compute actor loss
-            # Alternative: actor_loss = th.mean(log_prob - qf1_pi)
-            # Min over all critic networks
-            q_values_pi = th.cat(self.critic(replay_data.observations, actions_pi), dim=1)
-            min_qf_pi, _ = th.min(q_values_pi, dim=1, keepdim=True)
-            actor_loss = (ent_coef * log_prob - min_qf_pi).mean()
-            actor_losses.append(actor_loss.item())
-
-            # Optimize the actor
-            self.actor.optimizer.zero_grad()
-            actor_loss.backward()
-            self.actor.optimizer.step()
-
-            # Exploration loss
-            ddes_kl_div = 0
-            for i in range(batch_size):
-                ddes_kl_div += th.mean(log_prob[i] - log_prob)
-            ddes_kl_dev /= (batch_size - 1)
-
-            if ddes_kl_div.item() < self.delta:
-                self.exploration_alpha *= 1.01
-            else:
-                self.exploration_alpha *= 0.99
-
-            print(self.exploration_alpha)
-
-            ddes_kl_div = th.clip(
-                ddes_kl_div, min=-self.max_dist, max=self.max_dist
-            )
-            ddes_exploration_loss = -self.exploration_alpha * ddes_kl_div
-            ddes_exploration_loss.backward()
-
-            # Update target networks
-            if gradient_step % self.target_update_interval == 0:
-                polyak_update(self.critic.parameters(), self.critic_target.parameters(), self.tau)
-                # Copy running stats, see GH issue #996
-                polyak_update(self.batch_norm_stats, self.batch_norm_stats_target, 1.0)
-
-        self._n_updates += gradient_steps
-
-        self.logger.record("train/n_updates", self._n_updates, exclude="tensorboard")
-        self.logger.record("train/ent_coef", np.mean(ent_coefs))
-        self.logger.record("train/actor_loss", np.mean(actor_losses))
-        self.logger.record("train/critic_loss", np.mean(critic_losses))
-        if len(ent_coef_losses) > 0:
-            self.logger.record("train/ent_coef_loss", np.mean(ent_coef_losses))
