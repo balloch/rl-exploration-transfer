@@ -6,8 +6,10 @@ parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
 import argparse
-import gym
-import gym_minigrid
+import gymnasium as gym
+import minigrid
+import novgrid
+from novgrid.novelty_generation import novelty_wrappers
 from stable_baselines3 import PPO
 import time
 
@@ -15,10 +17,11 @@ from rlexplore.noisy_nets.noisy_actor import NoisyActorCriticCnnPolicy
 
 
 LOAD_MODEL = False
-NOISY = True
+NOISY = False
 TIMESTEPS = 3000000
 ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
 NUM_NOISY_LAYERS = 2
+NOVELTY_EPISODE = 10000
 
 
 def get_args():
@@ -30,6 +33,7 @@ def get_args():
     parser.add_argument("--total-time-steps", type=int, default=TIMESTEPS)
     parser.add_argument("--env-id", type=str, default=ENV_NAME)
     parser.add_argument("--num-noisy-layers", type=int, default=NUM_NOISY_LAYERS)
+    parser.add_argument("--novelty-episode", type=int, default=NOVELTY_EPISODE)
 
     args = parser.parse_args()
     return args
@@ -55,7 +59,9 @@ if __name__ == "__main__":
 
     env = gym.make(args.env_id)
 
-    env = gym_minigrid.wrappers.RGBImgObsWrapper(env, tile_size=8)
+    env = novelty_wrappers.DoorKeyChange(env, novelty_episode=args.novelty_episode)
+
+    env = minigrid.wrappers.RGBImgObsWrapper(env, tile_size=8)
 
     env = StableBaselinesWrapper(env)
 

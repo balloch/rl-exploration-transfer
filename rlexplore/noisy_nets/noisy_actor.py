@@ -13,7 +13,7 @@ from stable_baselines3.common.torch_layers import (
 from stable_baselines3.common.distributions import CategoricalDistribution
 
 
-import gym
+import gymnasium as gym
 
 from .noisy_mlp import NoisyMlpExtractor
 from .noisy_layer import NoisyLinear
@@ -31,17 +31,17 @@ class NoisyActorCriticPolicy(ActorCriticPolicy):
         observation_space: gym.spaces.Space,
         action_space: gym.spaces.Space,
         lr_schedule: Schedule,
-        net_arch: Optional[List[Union[int, Dict[str, List[int]]]]] = None,
+        net_arch: Optional[Union[List[int], Dict[str, List[int]]]] = None,
         activation_fn: Type[nn.Module] = nn.Tanh,
         ortho_init: bool = True,
         use_sde: bool = False,
         log_std_init: float = 0.0,
         full_std: bool = True,
-        sde_net_arch: Optional[List[int]] = None,
         use_expln: bool = False,
         squash_output: bool = False,
         features_extractor_class: Type[BaseFeaturesExtractor] = FlattenExtractor,
         features_extractor_kwargs: Optional[Dict[str, Any]] = None,
+        share_features_extractor: bool = True,
         normalize_images: bool = True,
         optimizer_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
         optimizer_kwargs: Optional[Dict[str, Any]] = None,
@@ -59,11 +59,11 @@ class NoisyActorCriticPolicy(ActorCriticPolicy):
             use_sde,
             log_std_init,
             full_std,
-            sde_net_arch,
             use_expln,
             squash_output,
             features_extractor_class,
             features_extractor_kwargs,
+            share_features_extractor,
             normalize_images,
             optimizer_class,
             optimizer_kwargs,
@@ -71,19 +71,19 @@ class NoisyActorCriticPolicy(ActorCriticPolicy):
 
     def _build(self, lr_schedule: Schedule) -> None:
         if self.num_noisy_layers > 0:
-            if isinstance(
-                self.action_dist, CategoricalDistribution
-            ):
+            if isinstance(self.action_dist, CategoricalDistribution):
                 self.action_dist = NoisyNetCategoricalDistribution(self.action_space.n)
             else:
-                '''
+                """
                 To implement more action spaces following these steps:
                     1. Create a sub class of the distribution and name it Noisy{Distribution Name}
                     2. Override the proba_distribution_net method and replace all Linear layers with NoisyLayers
                     3. Add an elif statement to this block as followings --> elif isinstance(self.action_dist, {Distribution Name}):
                     4. Within the elif block add the following line --> self.action_dist = Noisy{Distribution Name}(self.action_space.n, {any other required args})
-                '''
-                raise NotImplementedError(f"Error: noisy probability distribution, not implement for action space of type {type(self.action_space)}. Must be Discrete.")
+                """
+                raise NotImplementedError(
+                    f"Error: noisy probability distribution, not implement for action space of type {type(self.action_space)}. Must be Discrete."
+                )
 
         return super()._build(lr_schedule)
 
@@ -103,22 +103,23 @@ class NoisyActorCriticCnnPolicy(NoisyActorCriticPolicy):
         observation_space: gym.spaces.Space,
         action_space: gym.spaces.Space,
         lr_schedule: Schedule,
-        net_arch: Optional[List[Union[int, Dict[str, List[int]]]]] = [64],
+        net_arch: Optional[Union[List[int], Dict[str, List[int]]]] = None,
         activation_fn: Type[nn.Module] = nn.Tanh,
         ortho_init: bool = True,
         use_sde: bool = False,
         log_std_init: float = 0.0,
         full_std: bool = True,
-        sde_net_arch: Optional[List[int]] = None,
         use_expln: bool = False,
         squash_output: bool = False,
         features_extractor_class: Type[BaseFeaturesExtractor] = NatureCNN,
         features_extractor_kwargs: Optional[Dict[str, Any]] = None,
+        share_features_extractor: bool = True,
         normalize_images: bool = True,
         optimizer_class: Type[torch.optim.Optimizer] = torch.optim.Adam,
         optimizer_kwargs: Optional[Dict[str, Any]] = None,
         num_noisy_layers: int = 2,
     ):
+        print(features_extractor_kwargs)
         super().__init__(
             observation_space,
             action_space,
@@ -129,11 +130,11 @@ class NoisyActorCriticCnnPolicy(NoisyActorCriticPolicy):
             use_sde,
             log_std_init,
             full_std,
-            sde_net_arch,
             use_expln,
             squash_output,
             features_extractor_class,
             features_extractor_kwargs,
+            share_features_extractor,
             normalize_images,
             optimizer_class,
             optimizer_kwargs,
