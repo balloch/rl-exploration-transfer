@@ -75,7 +75,8 @@ if __name__ == "__main__":
         max_grad_norm=0.5,
         tensorboard_log="./logs/",
         policy_kwargs=dict(
-            num_noisy_layers=args.num_noisy_layers if args.noisy_layers else 0
+            num_noisy_layers=args.num_noisy_layers if args.noisy_layers else 0,
+            net_arch=dict(pi=[64, 64], vf=[64, 64]),
         ),
     )
 

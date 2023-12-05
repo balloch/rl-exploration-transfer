@@ -71,7 +71,7 @@ class NoisyMlpExtractor(nn.Module):
         else:
             pi_layers_dims = vf_layers_dims = net_arch
 
-        assert num_noisy_layers <= len(pi_layers_dims)
+        assert num_noisy_layers <= len(pi_layers_dims), f"{num_noisy_layers} > {len(pi_layers_dims)}"
 
         # Iterate through the policy layers and build the policy net
         policy_net = (

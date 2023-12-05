@@ -21,7 +21,7 @@ NOISY = False
 TIMESTEPS = 3000000
 ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
 NUM_NOISY_LAYERS = 2
-NOVELTY_EPISODE = 10000
+NOVELTY_EPISODE = 3000
 
 
 def get_args():
@@ -48,12 +48,12 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
         return obs["image"]
 
 
-if __name__ == "__main__":
+def main():
     args = get_args()
 
     timestamp = int(time.time())
 
-    model_name = f"{args.env_id.lower().replace('-', '_')}{'_noisy' if args.noisy_layers else ''}_cnn_ppo_{args.total_time_steps}_{timestamp}"
+    model_name = f"{args.env_id.lower().replace('-', '_').replace('mini', 'nov')}{'_noisy' if args.noisy_layers else ''}_cnn_ppo_{args.total_time_steps}_{timestamp}"
     model_file_path = f"models/{model_name}"
     log_path = f"logs/{model_name}"
 
@@ -81,7 +81,8 @@ if __name__ == "__main__":
         max_grad_norm=0.5,
         tensorboard_log="./logs/",
         policy_kwargs=dict(
-            num_noisy_layers=args.num_noisy_layers if args.noisy_layers else 0
+            num_noisy_layers=args.num_noisy_layers if args.noisy_layers else 0,
+            net_arch=dict(pi=[64, 64], vf=[64, 64]),
         ),
     )
 
@@ -90,14 +91,14 @@ if __name__ == "__main__":
         eps = 1
         num_steps = 1000
 
-        observation = env.reset()
+        observation, _info = env.reset()
         for _ in range(num_steps):
             action, _ = model.predict(observation, deterministic=True)
-            observation, reward, done, _ = env.step(action)
+            observation, reward, done, truncated, _info = env.step(action)
             total_reward += reward
 
-            if done:
-                observation = env.reset()
+            if done or truncated:
+                observation, _info = env.reset()
                 eps += 1
 
         print("-------------------------------------------")
@@ -124,3 +125,7 @@ if __name__ == "__main__":
         model.save(model_file_path)
 
     env.close()
+
+
+if __name__ == "__main__":
+    main()
