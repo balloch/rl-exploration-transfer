@@ -21,7 +21,7 @@ NOISY = False
 TIMESTEPS = 3000000
 ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
 NUM_NOISY_LAYERS = 2
-NOVELTY_EPISODE = 3000 # 3000 * 635 = ~2000000 timesteps
+NOVELTY_EPISODE = 3000  # 3000 * 635 = ~2000000 timesteps
 
 
 def get_args():
