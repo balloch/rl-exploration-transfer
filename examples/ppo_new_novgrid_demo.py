@@ -20,7 +20,7 @@ import time
 novgrid.ENV_NAME = "MiniGrid-Empty-8x8-v0"
 novgrid.CONFIG_FILE = "sample.json"
 novgrid.TIMESTEPS = 3000000
-novgrid.NOVELTY_STEP = 1000000
+novgrid.NOVELTY_STEP = 2000000
 novgrid.NUM_ENVS = 1
 
 
