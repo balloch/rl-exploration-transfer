@@ -5,6 +5,9 @@ import gymnasium as gym
 import minigrid
 import json
 
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env.subproc_vec_env import SubprocVecEnv
+
 ENV_NAME = "MiniGrid-Empty-8x8-v0"
 CONFIG_FILE = "sample.json"
 TIMESTEPS = None
@@ -42,23 +45,15 @@ def make_env_list(
         if "env_name" in config:
             env_name = config["env_name"]
             config = {k: config[k] for k in config if k != "env_name"}
-        if num_envs > 1:
-            env = gym.make_vec(
-                env_name,
-                num_envs=num_envs,
-                vectorization_mode="sync",
-                wrappers=wrappers,
-                **config,
-            )
-        else:
-            env = gym.make(
-                env_name,
-                **config,
-            )
-            for wrapper in wrappers:
-                env = wrapper(env)
+        envs = make_vec_env(
+            env_id=env_name,
+            n_envs=num_envs,
+            vec_env_cls=SubprocVecEnv,
+            wrapper_class=wrappers[0],
+            env_kwargs=config,
+        )  # TODO: currently only supports one wrapper
 
-        env_list.append(env)
+        env_list.append(envs)
 
     return env_list
 
