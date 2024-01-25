@@ -1,8 +1,8 @@
 [
   {
-    "env_name": "MiniGrid-DoorKey-16x16-v0"
+    "env_id": "MiniGrid-DoorKey-16x16-v0"
   },
   {
-    "env_name": "MiniGrid-Empty-16x16-v0"
+    "env_id": "MiniGrid-Empty-16x16-v0"
   }
 ]

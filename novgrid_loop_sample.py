@@ -42,11 +42,11 @@ def make_env_list(
     env_list = []
 
     for config in env_configs:
-        if "env_name" in config:
-            env_name = config["env_name"]
+        if "env_id" in config:
+            env_id = config["env_id"]
             config = {k: config[k] for k in config if k != "env_name"}
         envs = make_vec_env(
-            env_id=env_name,
+            env_id=env_id,
             n_envs=num_envs,
             vec_env_cls=SubprocVecEnv,
             wrapper_class=wrappers[0],
