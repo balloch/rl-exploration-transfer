@@ -132,6 +132,7 @@ if __name__ == "__main__":
     eps_rewards = deque([0.0] * 10, maxlen=10)
 
     env_idx = 0
+    last_transfer = 0
 
     for i in range(num_episodes):
         model.collect_rollouts(
@@ -162,11 +163,15 @@ if __name__ == "__main__":
         all_eps_rewards.append(list(eps_rewards.copy()))
         times_steps = i * args.n_steps * args.num_envs
         if (
-            times_steps // (args.novelty_step)
-            > (times_steps - args.n_steps * args.num_envs) // args.novelty_step
+            times_steps - last_transfer > args.novelty_step
+            and env_idx < len(env_list) - 1
         ):
             model.env.close()
             env_idx += 1
+            last_transfer += args.novelty_step
+            print("----------------------------------------")
+            print(f"| TRANSFER INJECTED: env_idx={env_idx} |")
+            print("----------------------------------------")
             model.set_env(env_list[env_idx], force_reset=False)
             model.env.reset()
 
