@@ -21,6 +21,7 @@ novgrid.TOTAL_TIME_STEPS = 1000000
 novgrid.NOVELTY_STEP = 250000
 novgrid.N_ENVS = 1
 LOG = True
+SAVE_MODEL = True
 
 
 class ImageWrapper(gym.ObservationWrapper):
@@ -41,6 +42,8 @@ def make_parser() -> argparse.ArgumentParser:
         return s.lower() in {"true", "t", "yes", "y"}
 
     parser.add_argument("--log", "-l", type=str2bool, default=LOG)
+    parser.add_argument("--save-model", "-s", type=str2bool, default=SAVE_MODEL)
+
     return parser
 
 
@@ -90,7 +93,8 @@ def main(args: argparse) -> None:
         tb_log_name=model_name,
     )
 
-    model.save(model_file_path)
+    if args.save_model:
+        model.save(model_file_path)
 
 
 if __name__ == "__main__":
