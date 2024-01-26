@@ -171,10 +171,11 @@ class NoveltyEnv(SubprocVecEnv):
             # Trigger the novelty if enough steps have passed
             novelty_injected = self.env_method("incr_env_idx")
             if np.any(novelty_injected) and self.print_novelty_box:
-                s = "| Novelty Injected! |"
+                s = f"| Novelty Injected (on env {self.get_attr('env_idx')}) |"
                 print("-" * len(s))
                 print(s)
                 print("-" * len(s))
+
         return result
 
 
@@ -194,7 +195,7 @@ def make_parser() -> argparse.ArgumentParser:
         default=CONFIG_FILE,
         help="Use the path to a json file here.",
     )
-    parser.add_argument("--total-time-steps", "-s", type=int, default=TOTAL_TIME_STEPS)
+    parser.add_argument("--total-time-steps", "-t", type=int, default=TOTAL_TIME_STEPS)
     parser.add_argument("--novelty-step", "-n", type=int, default=NOVELTY_STEP)
     parser.add_argument("--n-envs", "-e", type=int, default=N_ENVS)
 
