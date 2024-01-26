@@ -34,7 +34,7 @@ def make_parser() -> argparse.ArgumentParser:
 
 
 def make_env_list(
-    env_name: str,
+    env_id: str,
     env_configs: List[Dict[str, Any]],
     num_envs: int = 1,
     wrappers: Union[Sequence[Callable[[gym.Env], gym.Wrapper]], None] = None,
