@@ -28,8 +28,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 
 novgrid.ENV_NAME = "MiniGrid-Empty-8x8-v0"
 novgrid.CONFIG_FILE = "sample.json"
-novgrid.TIMESTEPS = 3000000
-novgrid.NOVELTY_STEP = 2000000
+novgrid.TIMESTEPS = 7000000
+novgrid.NOVELTY_STEP = 5000000
 novgrid.NUM_ENVS = 10
 
 
@@ -50,9 +50,7 @@ def make_parser():
     return parser
 
 
-if __name__ == "__main__":
-    args = make_parser().parse_args()
-
+def main(args):
     device = torch.device("cuda:0")
 
     num_episodes = int(args.total_steps / args.n_steps / args.num_envs)
@@ -60,7 +58,6 @@ if __name__ == "__main__":
 
     timestamp = int(time.time())
     wrappers = [
-        # minigrid.wrappers.RGBImgObsWrapper,
         StableBaselinesWrapper,
     ]
 
@@ -190,3 +187,9 @@ if __name__ == "__main__":
     model.env.close()
 
     model.save(model_file_path)
+
+
+if __name__ == "__main__":
+    args = make_parser().parse_args()
+
+    main(args)
