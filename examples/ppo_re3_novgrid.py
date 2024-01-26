@@ -20,6 +20,7 @@ novgrid.CONFIG_FILE = "sample2.json"
 novgrid.TOTAL_TIME_STEPS = 1000000
 novgrid.NOVELTY_STEP = 250000
 novgrid.N_ENVS = 1
+LOG = True
 
 
 class ImageWrapper(gym.ObservationWrapper):
@@ -35,6 +36,11 @@ class ImageWrapper(gym.ObservationWrapper):
 
 def make_parser() -> argparse.ArgumentParser:
     parser = novgrid.make_parser()
+
+    def str2bool(s: str) -> bool:
+        return s.lower() in {"true", "t", "yes", "y"}
+
+    parser.add_argument("--log", "-l", type=str2bool, default=LOG)
     return parser
 
 
@@ -63,7 +69,7 @@ def main(args: argparse) -> None:
         env=env,
         verbose=1,
         n_steps=2048,
-        tensorboard_log="./logs/",
+        tensorboard_log="./logs/" if args.log else None,
         ir_alg_cls=RE3,
         ir_alg_kwargs=dict(
             obs_shape=env.observation_space.shape,
