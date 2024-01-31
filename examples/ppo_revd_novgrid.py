@@ -96,20 +96,19 @@ def main(args):
         # ),
     )
 
-    use_exploration = False
+    use_exploration = True
     use_rnd = False
+    use_revd = True
     if use_exploration:
         if use_revd:
-            revd = REVD{
+            revd = REVD(
                  obs_shape = model.env.observation_space.shape,
                  action_shape = model.env.action_space.shape,
                  device = device,
                  latent_dim =128,
                  beta = 1e-2,
-                 kappa = 1e-5
-
-            }
-        else if use_rnd:
+                 kappa = 1e-5)
+        elif use_rnd:
             # Create RND module.
             rnd = RND(
                 obs_shape=env_list[0].observation_space.shape,
@@ -156,7 +155,7 @@ def main(args):
                     rollouts={"observations": model.rollout_buffer.observations},
                     time_steps=i * args.n_steps * args.num_envs
                 )
-            else if use_rnd:
+            elif use_rnd:
                 intrinsic_rewards = rnd.compute_irs(
                     rollouts={"observations": model.rollout_buffer.observations},
                     time_steps=i * args.n_steps * args.num_envs,
