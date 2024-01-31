@@ -14,7 +14,7 @@ from collections import deque
 from stable_baselines3 import PPO
 from rlexplore.rnd import RND
 from rlexplore.re3 import RE3
-from rlexplore.re3 import REVD
+from rlexplore.revd import REVD
 from rlexplore.utils import create_env, cleanup_log_dir
 
 import novgrid_loop_sample as novgrid
