@@ -175,7 +175,7 @@ def main(args):
 
     run_experiment(
         experiment_name=args.experiment_name,
-        env_configs=args.config_file,
+        env_configs=f"configs/args.config_file",
         total_time_steps=args.total_time_steps,
         novelty_step=args.novelty_step,
         n_envs=args.n_envs,
