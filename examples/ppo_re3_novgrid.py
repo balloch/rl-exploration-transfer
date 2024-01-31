@@ -13,7 +13,7 @@ import time
 
 import novelty_env as novgrid
 
-from rlexplore.ir_model import IR_PPO
+from rlexplore.ir_model import IR_PPO, IR_DQN
 from rlexplore.re3 import RE3
 
 novgrid.CONFIG_FILE = "sample2.json"
@@ -86,6 +86,26 @@ def main(args: argparse) -> None:
             k=3,
         ),
     )
+    # model = IR_DQN(
+    #     policy="MlpPolicy",
+    #     env=env,
+    #     verbose=1,
+    #     buffer_size=1000,
+    #     learning_starts=100,
+    #     tensorboard_log="./logs/" if args.log else None,
+    #     ir_alg_cls=RE3,
+    #     ir_alg_kwargs=dict(
+    #         obs_shape=env.observation_space.shape,
+    #         action_shape=env.action_space.shape,
+    #         device=device,
+    #         latent_dim=128,
+    #         beta=1e-2,
+    #         kappa=1e-5,
+    #     ),
+    #     compute_irs_kwargs=dict(
+    #         k=3,
+    #     ),
+    # )
 
     model.learn(
         total_timesteps=args.total_time_steps,
