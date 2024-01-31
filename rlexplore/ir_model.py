@@ -12,6 +12,8 @@ from stable_baselines3.common.on_policy_algorithm import OnPolicyAlgorithm
 from stable_baselines3.common.off_policy_algorithm import OffPolicyAlgorithm
 
 from stable_baselines3 import PPO, DQN
+import stable_baselines3 as sb3
+import inspect
 
 
 def create_on_policy_ir_class(policy_cls: Type[OnPolicyAlgorithm]):
@@ -51,8 +53,6 @@ def create_on_policy_ir_class(policy_cls: Type[OnPolicyAlgorithm]):
             )
             if result:
                 if self.exploration_alg is not None:
-                    # print(self.rollout_buffer.observations.shape) # 2048 2 147
-                    # print(self.rollout_buffer.rewards.shape) # 2048 2
                     intrinsic_rewards = self.exploration_alg.compute_irs(
                         rollouts={"observations": self.rollout_buffer.observations},
                         time_steps=self.num_timesteps,
@@ -132,5 +132,16 @@ def create_off_policy_ir_class(policy_cls: Type[OffPolicyAlgorithm]):
     return IRModel
 
 
-IR_PPO = create_on_policy_ir_class(PPO)
-IR_DQN = create_off_policy_ir_class(DQN)
+on_policy_algs = inspect.getmembers(
+    sb3, lambda obj: inspect.isclass(obj) and issubclass(obj, OnPolicyAlgorithm)
+)
+for on_policy_alg_name, on_policy_alg_cls in on_policy_algs:
+    globals()[f"IR_{on_policy_alg_name}"] = create_on_policy_ir_class(on_policy_alg_cls)
+
+off_policy_algs = inspect.getmembers(
+    sb3, lambda obj: inspect.isclass(obj) and issubclass(obj, OffPolicyAlgorithm)
+)
+for off_policy_alg_name, off_policy_alg_cls in off_policy_algs:
+    globals()[f"IR_{off_policy_alg_name}"] = create_off_policy_ir_class(
+        off_policy_alg_cls
+    )
