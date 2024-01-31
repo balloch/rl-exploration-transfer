@@ -182,7 +182,7 @@ class RelationalActorCritic(nn.Module):
             pi_logits = self.policy_head(x)
     
             return pi_logits, b
-
+#
     def evaluate(self, obs, deterministic=False):
         pi_logits, b = self.forward(obs)
         if deterministic:
