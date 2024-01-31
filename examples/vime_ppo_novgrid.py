@@ -8,9 +8,11 @@ sys.path.append(parent_dir_path)
 import argparse
 import gym
 import gym_minigrid
+import novgrid
+from novgrid.novelty_generation import novelty_wrappers
 from stable_baselines3 import PPO
 import time
-# to do: add after implementation 
+
 from rlexplore.vime.vime_policy import VimeActorCriticCnnPolicy
 
 
@@ -53,7 +55,9 @@ if __name__ == "__main__":
 
     env = gym.make(args.env_id)
 
-    env = gym_minigrid.wrappers.RGBImgObsWrapper(env, tile_size=8)
+    env = novelty_wrappers.DoorKeyChange(env, novelty_episode=args.novelty_episode)
+
+    env = minigrid.wrappers.RGBImgObsWrapper(env, tile_size=8)
 
     env = StableBaselinesWrapper(env)
 
