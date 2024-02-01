@@ -9,7 +9,7 @@ sys.path.append(parent_dir_path)
 import argparse
 import gymnasium as gym
 import novelty_env as novgrid
-from examples.experiment_runner import run_experiment
+from experiments.experiment_runner import run_experiment
 
 novgrid.CONFIG_FILE = "sample3.json"
 novgrid.TOTAL_TIME_STEPS = 10_000_000
