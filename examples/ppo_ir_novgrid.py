@@ -12,9 +12,9 @@ import novelty_env as novgrid
 from examples.experiment_runner import run_experiment
 
 novgrid.CONFIG_FILE = "sample3.json"
-novgrid.TOTAL_TIME_STEPS = 1000000
-novgrid.NOVELTY_STEP = 250000
-novgrid.N_ENVS = 1
+novgrid.TOTAL_TIME_STEPS = 8000000
+novgrid.NOVELTY_STEP = 2000000
+novgrid.N_ENVS = 5
 
 EXPERIMENT_NAME = "novgrid_empty_ppo_re3"
 
@@ -37,7 +37,7 @@ WANDB_MODEL_SAVE_FREQ = 100000
 WANDB_GRADIENT_SAVE_FREQ = 0
 WANDB_VERBOSE = 2
 
-N_RUNS = 1
+N_RUNS = 5
 
 LOG = True
 SAVE_MODEL = True
