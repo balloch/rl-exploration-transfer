@@ -54,7 +54,7 @@ def add_config_file_arg(parser: argparse.ArgumentParser) -> argparse.ArgumentPar
         default=[],
         type=str,
         nargs="+",
-        help=f"A config file specifying some new default arguments (that can be overridden by command line args). This can be a list of config files ({'/'.join(supported_exts)}) with whatever arguments are set in them in order of lowest to highest priority. Usage: --config-file configs/test.json configs/test2.json.",
+        help=f"A config file specifying some new default arguments (that can be overridden by command line args). This can be a list of config files ({'/'.join(supported_exts)}) with whatever arguments are set in them in order of lowest to highest priority. Usage: --config-file test.json test2.json.",
     )
     return parser
 
