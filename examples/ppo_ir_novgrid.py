@@ -11,7 +11,7 @@ import gymnasium as gym
 import novelty_env as novgrid
 from examples.experiment_runner import run_experiment
 
-novgrid.CONFIG_FILE = "sample2.json"
+novgrid.CONFIG_FILE = "sample3.json"
 novgrid.TOTAL_TIME_STEPS = 1000000
 novgrid.NOVELTY_STEP = 250000
 novgrid.N_ENVS = 1
@@ -28,6 +28,14 @@ IR_LR = 1e-3
 IR_LATENT_DIM = 128
 IR_BATCH_SIZE = 32
 IR_LAMBDA = 1e-1
+
+WANDB_PROJECT_NAME = "rl-transfer-explore"
+WANDB_SAVE_VIDEOS = False
+WANDB_VIDEO_FREQ = 2000
+WANDB_VIDEO_LENGTH = 200
+WANDB_MODEL_SAVE_FREQ = 100000
+WANDB_GRADIENT_SAVE_FREQ = 0
+WANDB_VERBOSE = 2
 
 N_RUNS = 1
 
@@ -68,6 +76,29 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ir-latent-dim", "-irld", type=int, default=IR_LATENT_DIM)
     parser.add_argument("--ir-batch-size", "-irbs", type=int, default=IR_BATCH_SIZE)
     parser.add_argument("--ir-lambda", "-irlb", type=float, default=IR_LAMBDA)
+
+    parser.add_argument(
+        "--wandb-project-name", "-wpn", type=str, default=WANDB_PROJECT_NAME
+    )
+    parser.add_argument(
+        "--wandb-save-videos", "-wsv", type=str, default=WANDB_SAVE_VIDEOS
+    )
+    parser.add_argument(
+        "--wandb-video-freq", "-wvf", type=int, default=WANDB_VIDEO_FREQ
+    )
+    parser.add_argument(
+        "--wandb-video-length", "-wvl", type=int, default=WANDB_VIDEO_LENGTH
+    )
+    parser.add_argument(
+        "--wandb-model-save-freq", "-wmsf", type=int, default=WANDB_MODEL_SAVE_FREQ
+    )
+    parser.add_argument(
+        "--wandb-gradient-save-freq",
+        "-wgsf",
+        type=int,
+        default=WANDB_GRADIENT_SAVE_FREQ,
+    )
+    parser.add_argument("--wandb-verbose", "-wv", type=int, default=WANDB_VERBOSE)
 
     parser.add_argument("--n-runs", "-r", type=int, default=N_RUNS)
 
@@ -169,8 +200,20 @@ def main(args):
     )
     model_extra_kwargs = dict(
         PPO=dict(
+            learning_rate=0.001,
             n_steps=2048,
+            batch_size=256,
+            n_epochs=4,
+            gamma=0.99,
+            gae_lambda=0.95,
+            clip_range=0.2,
+            ent_coef=0.01,
+            vf_coef=0.5,
+            max_grad_norm=0.5,
         )
+    )
+    policy_kwargs = dict(
+        ActorCriticCnnPolicy=dict(net_arch=dict(pi=[64, 64], vf=[64, 64])),
     )
 
     run_experiment(
@@ -189,10 +232,18 @@ def main(args):
             compute_irs_kwargs=compute_irs_kwargs[args.ir_alg],
         ),
         policy=args.policy,
+        policy_kwargs=policy_kwargs.get(args.policy, None),
         n_runs=args.n_runs,
-        log_interval=args.log_interval,
-        print_novelty_box=args.print_novelty_box,
         log=args.log,
+        log_interval=args.log_interval,
+        wandb_project_name=args.wandb_project_name,
+        wandb_save_videos=args.wandb_save_videos,
+        wandb_video_freq=args.wandb_video_freq,
+        wandb_video_length=args.wandb_video_length,
+        wandb_model_save_freq=args.wandb_model_save_freq,
+        wandb_gradient_save_freq=args.wandb_gradient_save_freq,
+        wandb_verbose=args.wandb_verbose,
+        print_novelty_box=args.print_novelty_box,
         save_model=args.save_model,
     )
 
