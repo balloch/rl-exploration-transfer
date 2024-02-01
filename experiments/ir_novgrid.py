@@ -15,7 +15,7 @@ from experiments.experiment_runner import run_experiment
 from utils.arg_types import str2bool
 from utils.args import get_args
 
-novgrid.CONFIG_FILE = "simple_to_lava_crossing.json"
+novgrid.ENV_CONFIG_FILE = "simple_to_lava_crossing.json"
 novgrid.TOTAL_TIME_STEPS = 10_000_000
 novgrid.NOVELTY_STEP = 3_000_000
 novgrid.N_ENVS = 5
@@ -65,52 +65,171 @@ class ImageWrapper(gym.ObservationWrapper):
 def make_parser() -> argparse.ArgumentParser:
     parser = novgrid.make_parser()
 
-    parser.add_argument("--experiment-name", "-en", type=str, default=EXPERIMENT_NAME)
-
-    parser.add_argument("--sb3-model", "-m", type=str, default=SB3_MODEL)
-    parser.add_argument("--policy", "-p", type=str, default=POLICY)
-
-    parser.add_argument("--ir-alg", "-ir", type=str, default=IR_ALG)
-    parser.add_argument("--ir-beta", "-irb", type=float, default=IR_BETA)
-    parser.add_argument("--ir-kappa", "-irk", type=float, default=IR_KAPPA)
-    parser.add_argument("--ir-learning-rate", "-irl", type=float, default=IR_LR)
-    parser.add_argument("--ir-latent-dim", "-irld", type=int, default=IR_LATENT_DIM)
-    parser.add_argument("--ir-batch-size", "-irbs", type=int, default=IR_BATCH_SIZE)
-    parser.add_argument("--ir-lambda", "-irlb", type=float, default=IR_LAMBDA)
+    parser.description = "An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training."
 
     parser.add_argument(
-        "--wandb-project-name", "-wpn", type=str, default=WANDB_PROJECT_NAME
+        "--experiment-name",
+        "-en",
+        type=str,
+        default=EXPERIMENT_NAME,
+        help="The name of the experiment.",
+    )
+
+    parser.add_argument(
+        "--sb3-model",
+        "-m",
+        type=str,
+        default=SB3_MODEL,
+        help="The name of the stable baselines model to use. Examples include PPO, DQN, etc.",
     )
     parser.add_argument(
-        "--wandb-save-videos", "-wsv", type=str, default=WANDB_SAVE_VIDEOS
+        "--policy",
+        "-p",
+        type=str,
+        default=POLICY,
+        help="The type of policy to use. Examples include MlpPolicy, CnnPolicy, etc.",
+    )
+
+    parser.add_argument(
+        "--ir-alg",
+        "-ir",
+        type=str,
+        default=IR_ALG,
+        help="The intrinsic reward algorithm to use. Examples include RE3, RND, NGU, etc.",
     )
     parser.add_argument(
-        "--wandb-video-freq", "-wvf", type=int, default=WANDB_VIDEO_FREQ
+        "--ir-beta",
+        "-irb",
+        type=float,
+        default=IR_BETA,
+        help="The beta parameter for the intrinsic reward algorithm.",
     )
     parser.add_argument(
-        "--wandb-video-length", "-wvl", type=int, default=WANDB_VIDEO_LENGTH
+        "--ir-kappa",
+        "-irk",
+        type=float,
+        default=IR_KAPPA,
+        help="The kappa parameter for the intrinsic reward algorithm.",
     )
     parser.add_argument(
-        "--wandb-model-save-freq", "-wmsf", type=int, default=WANDB_MODEL_SAVE_FREQ
+        "--ir-learning-rate",
+        "-irl",
+        type=float,
+        default=IR_LR,
+        help="The learning rate parameter for the intrinsic reward algorithm.",
+    )
+    parser.add_argument(
+        "--ir-latent-dim",
+        "-irld",
+        type=int,
+        default=IR_LATENT_DIM,
+        help="The latent dim parameter for the intrinsic reward algorithm.",
+    )
+    parser.add_argument(
+        "--ir-batch-size",
+        "-irbs",
+        type=int,
+        default=IR_BATCH_SIZE,
+        help="The batch size parameter for the intrinsic reward algorithm.",
+    )
+    parser.add_argument(
+        "--ir-lambda",
+        "-irlb",
+        type=float,
+        default=IR_LAMBDA,
+        help="The lambda parameter for the intrinsic reward algorithm.",
+    )
+
+    parser.add_argument(
+        "--wandb-project-name",
+        "-wpn",
+        type=str,
+        default=WANDB_PROJECT_NAME,
+        help="The project name to save under in wandb.",
+    )
+    parser.add_argument(
+        "--wandb-save-videos",
+        "-wsv",
+        type=str2bool,
+        default=WANDB_SAVE_VIDEOS,
+        help="Whether or not to save videos to wandb.",
+    )
+    parser.add_argument(
+        "--wandb-video-freq",
+        "-wvf",
+        type=int,
+        default=WANDB_VIDEO_FREQ,
+        help="How often to save videos to wandb.",
+    )
+    parser.add_argument(
+        "--wandb-video-length",
+        "-wvl",
+        type=int,
+        default=WANDB_VIDEO_LENGTH,
+        help="How long the videos saved to wandb should be",
+    )
+    parser.add_argument(
+        "--wandb-model-save-freq",
+        "-wmsf",
+        type=int,
+        default=WANDB_MODEL_SAVE_FREQ,
+        help="How often to save the model.",
     )
     parser.add_argument(
         "--wandb-gradient-save-freq",
         "-wgsf",
         type=int,
         default=WANDB_GRADIENT_SAVE_FREQ,
+        help="How often to save the gradients.",
     )
-    parser.add_argument("--wandb-verbose", "-wv", type=int, default=WANDB_VERBOSE)
-
-    parser.add_argument("--n-runs", "-r", type=int, default=N_RUNS)
-
-    parser.add_argument("--log", "-l", type=str2bool, default=LOG)
-    parser.add_argument("--save-model", "-s", type=str2bool, default=SAVE_MODEL)
-
-    parser.add_argument("--log-interval", "-li", type=int, default=LOG_INTERVAL)
     parser.add_argument(
-        "--print-novelty-box", "-pnb", type=str2bool, default=PRINT_NOVELTY_BOX
+        "--wandb-verbose",
+        "-wv",
+        type=int,
+        default=WANDB_VERBOSE,
+        help="The verbosity setting for wandb.",
     )
-    parser.add_argument("--verbose", "-v", type=int, default=VERBOSE)
+
+    parser.add_argument(
+        "--n-runs", "-r", type=int, default=N_RUNS, help="The number of runs to do."
+    )
+
+    parser.add_argument(
+        "--log",
+        "-l",
+        type=str2bool,
+        default=LOG,
+        help="Whether or not to log the results to tensor board and wandb.",
+    )
+    parser.add_argument(
+        "--save-model",
+        "-s",
+        type=str2bool,
+        default=SAVE_MODEL,
+        help="Whether or not to save the model if wandb didn't already.",
+    )
+
+    parser.add_argument(
+        "--log-interval",
+        "-li",
+        type=int,
+        default=LOG_INTERVAL,
+        help="The log interval for model.learn.",
+    )
+    parser.add_argument(
+        "--print-novelty-box",
+        "-pnb",
+        type=str2bool,
+        default=PRINT_NOVELTY_BOX,
+        help="Whether or not to print the novelty box when novelty occurs.",
+    )
+    parser.add_argument(
+        "--verbose",
+        "-v",
+        type=int,
+        default=VERBOSE,
+        help="The verbosity parameter for model.learn.",
+    )
 
     return parser
 
@@ -219,7 +338,7 @@ def main(args):
 
     run_experiment(
         experiment_name=args.experiment_name,
-        env_configs=f"./env_configs/{args.env_config_file}",
+        env_configs=f"env_configs/{args.env_config_file}",
         total_time_steps=args.total_time_steps,
         novelty_step=args.novelty_step,
         n_envs=args.n_envs,
