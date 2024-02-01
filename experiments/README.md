@@ -1,3 +1,5 @@
+pygame 2.5.2 (SDL 2.28.2, Python 3.8.18)
+Hello from the pygame community. https://www.pygame.org/contribute.html
 # Intrinsic Reward NovGrid Runner
 An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training.
 ## Run Command
@@ -30,7 +32,8 @@ These are environment config files (and can be specified in the main config file
 	{
 		"env_id": "MiniGrid-SimpleCrossingS9N3-v0"
 	}
-]```
+]
+```
 This env config will have the agent start in the `MiniGrid-SimpleCrossing` environment, then transfer to `MiniGrid-LavaCrossing`, and then back.
 Further, different environment specifications can be specified within this json, changing the size of environments or other settings.
 
