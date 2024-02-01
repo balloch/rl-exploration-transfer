@@ -139,6 +139,7 @@ def run_experiment(
             "torch_device": device,
             "env_observation_shape": env.observation_space.shape,
             "env_action_shape": env.action_space.shape,
+            "None": None,
             **{
                 k: v
                 for k, v in inspect.getmembers(
