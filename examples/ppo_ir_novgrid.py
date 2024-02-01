@@ -12,8 +12,8 @@ import novelty_env as novgrid
 from examples.experiment_runner import run_experiment
 
 novgrid.CONFIG_FILE = "sample3.json"
-novgrid.TOTAL_TIME_STEPS = 8000000
-novgrid.NOVELTY_STEP = 2000000
+novgrid.TOTAL_TIME_STEPS = 10_000_000
+novgrid.NOVELTY_STEP = 3_000_000
 novgrid.N_ENVS = 5
 
 EXPERIMENT_NAME = "novgrid_wall_to_lava_ppo_re3"
