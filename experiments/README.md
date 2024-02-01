@@ -1,5 +1,3 @@
-pygame 2.5.2 (SDL 2.28.2, Python 3.8.18)
-Hello from the pygame community. https://www.pygame.org/contribute.html
 # Intrinsic Reward NovGrid Runner
 An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training.
 ## Run Command
