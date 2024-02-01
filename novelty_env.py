@@ -177,7 +177,7 @@ class NoveltyEnv(SubprocVecEnv):
         return result
 
 
-CONFIG_FILE = "sample2.json"
+ENV_CONFIG_FILE = "sample2.json"
 TOTAL_TIME_STEPS = None
 NOVELTY_STEP = 10
 N_ENVS = 1
@@ -187,15 +187,33 @@ def make_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--config-file",
+        "--env-config-file",
         "-c",
         type=str,
-        default=CONFIG_FILE,
-        help="Use the path to a json file here.",
+        default=ENV_CONFIG_FILE,
+        help="Use the path to a json file containing the env configs here.",
     )
-    parser.add_argument("--total-time-steps", "-t", type=int, default=TOTAL_TIME_STEPS)
-    parser.add_argument("--novelty-step", "-n", type=int, default=NOVELTY_STEP)
-    parser.add_argument("--n-envs", "-e", type=int, default=N_ENVS)
+    parser.add_argument(
+        "--total-time-steps",
+        "-t",
+        type=int,
+        default=TOTAL_TIME_STEPS,
+        help="The total number of time steps to run.",
+    )
+    parser.add_argument(
+        "--novelty-step",
+        "-n",
+        type=int,
+        default=NOVELTY_STEP,
+        help="The total number of time steps to run in an environment before injecting the next novelty.",
+    )
+    parser.add_argument(
+        "--n-envs",
+        "-e",
+        type=int,
+        default=N_ENVS,
+        help="The number of envs to use when running the vectorized env.",
+    )
 
     return parser
 
