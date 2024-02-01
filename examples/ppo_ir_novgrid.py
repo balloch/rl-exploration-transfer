@@ -16,7 +16,7 @@ novgrid.TOTAL_TIME_STEPS = 8000000
 novgrid.NOVELTY_STEP = 2000000
 novgrid.N_ENVS = 5
 
-EXPERIMENT_NAME = "novgrid_empty_ppo_re3"
+EXPERIMENT_NAME = "novgrid_wall_to_lava_ppo_re3"
 
 SB3_MODEL = "PPO"
 POLICY = "MlpPolicy"
@@ -228,8 +228,8 @@ def main(args):
             verbose=args.verbose,
             **model_extra_kwargs.get(args.sb3_model, {}),
             ir_alg_cls=args.ir_alg,
-            ir_alg_kwargs=ir_alg_kwargs[args.ir_alg],
-            compute_irs_kwargs=compute_irs_kwargs[args.ir_alg],
+            ir_alg_kwargs=ir_alg_kwargs.get(args.ir_alg, {}),
+            compute_irs_kwargs=compute_irs_kwargs.get(args.ir_alg, {}),
         ),
         policy=args.policy,
         policy_kwargs=policy_kwargs.get(args.policy, None),
