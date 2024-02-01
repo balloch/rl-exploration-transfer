@@ -188,7 +188,7 @@ def make_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--env-config-file",
-        "-c",
+        "-ec",
         type=str,
         default=ENV_CONFIG_FILE,
         help="Use the path to a json file containing the env configs here.",

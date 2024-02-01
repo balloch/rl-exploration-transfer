@@ -8,15 +8,19 @@ sys.path.append(parent_dir_path)
 
 import argparse
 import gymnasium as gym
+
 import novelty_env as novgrid
 from experiments.experiment_runner import run_experiment
 
-novgrid.CONFIG_FILE = "sample3.json"
+from utils.arg_types import str2bool
+from utils.args import get_args
+
+novgrid.CONFIG_FILE = "simple_to_lava_crossing.json"
 novgrid.TOTAL_TIME_STEPS = 10_000_000
 novgrid.NOVELTY_STEP = 3_000_000
 novgrid.N_ENVS = 5
 
-EXPERIMENT_NAME = "novgrid_wall_to_lava_ppo_re3"
+EXPERIMENT_NAME = "novgrid_simple_to_lava_ppo_re3"
 
 SB3_MODEL = "PPO"
 POLICY = "MlpPolicy"
@@ -60,9 +64,6 @@ class ImageWrapper(gym.ObservationWrapper):
 
 def make_parser() -> argparse.ArgumentParser:
     parser = novgrid.make_parser()
-
-    def str2bool(s: str) -> bool:
-        return s.lower() in {"true", "t", "yes", "y"}
 
     parser.add_argument("--experiment-name", "-en", type=str, default=EXPERIMENT_NAME)
 
@@ -218,7 +219,7 @@ def main(args):
 
     run_experiment(
         experiment_name=args.experiment_name,
-        env_configs=f"./env_configs/{args.config_file}",
+        env_configs=f"./env_configs/{args.env_config_file}",
         total_time_steps=args.total_time_steps,
         novelty_step=args.novelty_step,
         n_envs=args.n_envs,
@@ -250,5 +251,5 @@ def main(args):
 
 if __name__ == "__main__":
     parser = make_parser()
-    args = parser.parse_args()
+    args = get_args(parser=parser, configs_root="./configs")
     main(args=args)
