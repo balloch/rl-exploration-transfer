@@ -15,6 +15,7 @@ from stable_baselines3.common.vec_env import VecVideoRecorder
 import wandb
 from wandb.integration.sb3 import WandbCallback
 
+import numpy as np
 import gymnasium as gym
 import torch
 import time
@@ -55,6 +56,7 @@ def run_experiment(
     device: Optional[torch.device] = None,
     override_timestamp: Optional[int] = None,
     print_novelty_box: bool = False,
+    seed: int = None,
 ):
     config = dict(locals().copy())
 
@@ -64,6 +66,8 @@ def run_experiment(
 
     device = torch.device("cuda:0") if device is None else device
     timestamp = int(time.time()) if override_timestamp is None else override_timestamp
+
+    config["timestamp"] = timestamp
 
     if type(model_cls) == str:
         model_cls = {
@@ -115,6 +119,7 @@ def run_experiment(
                 monitor_gym=wandb_save_videos,
                 save_code=True,
                 reinit=True,
+                tags=[str(timestamp), experiment_name],
             )
 
         env = NoveltyEnv(
@@ -132,6 +137,8 @@ def run_experiment(
                 record_video_trigger=lambda x: x % wandb_video_freq == 0,
                 video_length=wandb_video_length,
             )
+        if seed is not None:
+            env.seed(seed + 2 * run_num + 1)
 
         str_replacement_params = {
             "env": env,
@@ -176,6 +183,9 @@ def run_experiment(
             tensorboard_log="./logs/" if log else None,
             **model_kwargs,
         )
+
+        if seed is not None:
+            model.set_random_seed(seed=seed + run_num)
 
         model.learn(
             total_timesteps=total_time_steps,
