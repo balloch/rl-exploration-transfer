@@ -15,12 +15,12 @@ from experiments.experiment_runner import run_experiment
 from utils.arg_types import str2bool
 from utils.args import get_args
 
-novgrid.ENV_CONFIG_FILE = "simple_to_lava_crossing.json"
+novgrid.ENV_CONFIG_FILE = "simple_to_lava_to_simple_crossing.json"
 novgrid.TOTAL_TIME_STEPS = 10_000_000
 novgrid.NOVELTY_STEP = 3_000_000
 novgrid.N_ENVS = 5
 
-EXPERIMENT_NAME = "novgrid_simple_to_lava_ppo_re3"
+EXPERIMENT_NAME = "novgrid_simple_to_lava_to_simple_crossing_ppo_re3"
 
 SB3_MODEL = "PPO"
 POLICY = "MlpPolicy"
