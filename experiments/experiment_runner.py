@@ -68,6 +68,7 @@ def run_experiment(
     timestamp = int(time.time()) if override_timestamp is None else override_timestamp
 
     config["timestamp"] = timestamp
+    config["experiment_id"] = f"{experiment_name}_{timestamp}"
 
     if type(model_cls) == str:
         model_cls = {
