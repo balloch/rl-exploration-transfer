@@ -161,20 +161,22 @@ class NoveltyEnv(SubprocVecEnv):
         super().__init__(env_fns=env_fns, start_method=start_method)
 
     def step(self, actions: np.ndarray) -> VecEnvStepReturn:
-        result = super().step(actions)
+        observations, rewards, dones, infos = super().step(actions)
         # Increment total time steps
         self.total_time_steps += self.n_envs
         if self.total_time_steps - self.last_incr > self.novelty_step:
             self.last_incr = self.total_time_steps
             # Trigger the novelty if enough steps have passed
             novelty_injected = self.env_method("incr_env_idx")
+            dones[:] = True
+
             if np.any(novelty_injected) and self.print_novelty_box:
                 s = f"| Novelty Injected (on env {self.get_attr('env_idx')}) |"
                 print("-" * len(s))
                 print(s)
                 print("-" * len(s))
 
-        return result
+        return observations, rewards, dones, infos
 
 
 ENV_CONFIG_FILE = "sample2.json"
@@ -222,7 +224,7 @@ def run_example(
     args: argparse.Namespace,
 ):
     env = NoveltyEnv(
-        env_configs=args.config_file,
+        env_configs=args.env_config_file,
         novelty_step=args.novelty_step,
         n_envs=args.n_envs,
     )
