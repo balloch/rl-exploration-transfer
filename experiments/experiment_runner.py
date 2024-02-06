@@ -35,10 +35,7 @@ def run_experiment(
     wrappers: List[gym.Wrapper] = [],
     wrapper_kwargs_lst: List[Dict[str, Any]] = [],
     model_cls: Union[str, Type[BaseAlgorithm]] = "PPO",
-    model_kwargs: Dict[str, Any] = dict(
-        verbose=1,
-        n_steps=2048,
-    ),
+    model_kwargs: Optional[Dict[str, Any]] = None,
     policy: Union[str, BasePolicy] = "MlpPolicy",
     policy_kwargs: Optional[Dict[str, Any]] = None,
     save_model: bool = True,
@@ -48,23 +45,27 @@ def run_experiment(
     log_interval: int = 1,
     wandb_project_name: str = "rl-transfer-explore",
     wandb_save_videos: bool = False,
-    wandb_video_freq: int = 2000,
+    wandb_video_freq: int = 2_000,
     wandb_video_length: int = 200,
-    wandb_model_save_freq: int = 100000,
+    wandb_model_save_freq: int = 100_000,
     wandb_gradient_save_freq: int = 0,
     wandb_verbose: int = 2,
-    device: Optional[torch.device] = None,
+    device: str = "cuda:0",
+    gpu_idx: Optional[int] = None,
     override_timestamp: Optional[int] = None,
     print_novelty_box: bool = False,
     seed: int = None,
 ):
     config = dict(locals().copy())
 
+    if gpu_idx is not None:
+        os.environ["CUDA_VISIBLE_DEVICES"] = gpu_idx
+
     if type(config["env_configs"]) == str:
         with open(config["env_configs"], "r") as f:
             config["env_configs"] = json.load(f)
 
-    device = torch.device("cuda:0") if device is None else device
+    device = torch.device(device)
     timestamp = int(time.time()) if override_timestamp is None else override_timestamp
 
     config["timestamp"] = timestamp
@@ -173,6 +174,9 @@ def run_experiment(
                 elif type(d[k]) == str and d[k] in str_replacement_params:
                     d[k] = str_replacement_params[d[k]]
 
+        if model_kwargs is None:
+            model_kwargs = {}
+
         replace_all_env_based_params(policy_kwargs)
         replace_all_env_based_params(model_kwargs)
 
@@ -192,14 +196,16 @@ def run_experiment(
             total_timesteps=total_time_steps,
             log_interval=log_interval,
             tb_log_name=model_name,
-            callback=WandbCallback(
-                gradient_save_freq=wandb_gradient_save_freq,
-                model_save_freq=wandb_model_save_freq,
-                model_save_path=model_file_path,
-                verbose=wandb_verbose,
-            )
-            if log and use_wandb
-            else None,
+            callback=(
+                WandbCallback(
+                    gradient_save_freq=wandb_gradient_save_freq,
+                    model_save_freq=wandb_model_save_freq,
+                    model_save_path=model_file_path,
+                    verbose=wandb_verbose,
+                )
+                if log and use_wandb
+                else None
+            ),
         )
 
         if save_model and (not use_wandb or not log):

@@ -49,6 +49,9 @@ SAVE_MODEL = True
 LOG_INTERVAL = 1
 PRINT_NOVELTY_BOX = True
 VERBOSE = 1
+DEVICE = "cuda:0"
+
+GPU_IDX = None
 
 
 class ImageWrapper(gym.ObservationWrapper):
@@ -231,10 +234,22 @@ def make_parser() -> argparse.ArgumentParser:
         help="The verbosity parameter for model.learn.",
     )
 
+    parser.add_argument(
+        "--device",
+        "-d",
+        type=str,
+        default=DEVICE,
+        help="The torch device string to use.",
+    )
+    parser.add_argument(
+        "--gpu-idx", "-gi", type=int, default=GPU_IDX, help="The gpu index to use."
+    )
+
     return parser
 
 
 def main(args):
+
     ir_alg_kwargs = dict(
         RE3=dict(
             obs_shape="env_observation_shape",
@@ -330,6 +345,7 @@ def main(args):
             ent_coef=0.01,
             vf_coef=0.5,
             max_grad_norm=0.5,
+            verbose=1,
         )
     )
     policy_kwargs = dict(
