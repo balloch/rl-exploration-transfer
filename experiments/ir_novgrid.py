@@ -9,16 +9,16 @@ sys.path.append(parent_dir_path)
 import argparse
 import gymnasium as gym
 
-import novelty_env as novgrid
+import novgrid.config as novgrid_config
 from experiments.experiment_runner import run_experiment
 
 from utils.arg_types import str2bool
 from utils.args import get_args
 
-novgrid.ENV_CONFIG_FILE = "simple_to_lava_to_simple_crossing.json"
-novgrid.TOTAL_TIME_STEPS = 10_000_000
-novgrid.NOVELTY_STEP = 3_000_000
-novgrid.N_ENVS = 5
+novgrid_config.ENV_CONFIG_FILE = "simple_to_lava_to_simple_crossing.json"
+novgrid_config.TOTAL_TIME_STEPS = 10_000_000
+novgrid_config.NOVELTY_STEP = 3_000_000
+novgrid_config.N_ENVS = 5
 
 EXPERIMENT_NAME = "novgrid_simple_to_lava_to_simple_crossing_ppo_re3"
 
@@ -63,7 +63,7 @@ class ImageWrapper(gym.ObservationWrapper):
 
 
 def make_parser() -> argparse.ArgumentParser:
-    parser = novgrid.make_parser()
+    parser = novgrid_config.make_parser()
 
     parser.description = "An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training."
 

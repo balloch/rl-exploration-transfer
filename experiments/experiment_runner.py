@@ -23,7 +23,7 @@ import json
 import inspect
 
 import rlexplore
-from novelty_env import NoveltyEnv
+from novgrid import NoveltyEnv
 
 
 def run_experiment(
