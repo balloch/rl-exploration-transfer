@@ -11,7 +11,7 @@ from utils.args import print_markdown
 
 
 def generate_readme():
-    from experiments.ir_novgrid import make_parser
+    from experiments.config import make_parser
 
     parser = make_parser()
     print_markdown(
