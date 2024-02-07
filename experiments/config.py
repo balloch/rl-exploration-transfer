@@ -23,33 +23,10 @@ novgrid_config.N_ENVS = 5
 
 EXPERIMENT_NAME = None
 EXPERIMENT_PREFIX = "novgrid_"
-EXPERIMENT_SUFFIX = "_re3"
+EXPERIMENT_SUFFIX = ""
 
-RL_ALG = IR_PPO
-RL_ALG_KWARGS = dict(
-    learning_rate=0.001,
-    n_steps=2048,
-    batch_size=256,
-    n_epochs=4,
-    gamma=0.99,
-    gae_lambda=0.95,
-    clip_range=0.2,
-    ent_coef=0.01,
-    vf_coef=0.5,
-    max_grad_norm=0.5,
-    ir_alg_cls="RE3",
-    ir_alg_kwargs=dict(
-        obs_shape="env_observation_shape",
-        action_shape="env_action_shape",
-        device="torch_device",
-        latent_dim=128,
-        beta=1e-2,
-        kappa=1e-3,
-    ),
-    compute_irs_kwargs=dict(
-        k=3,
-    ),
-)
+RL_ALG = sb3.PPO
+RL_ALG_KWARGS = dict()
 POLICY = "MlpPolicy"
 POLICY_KWARGS = dict()
 
