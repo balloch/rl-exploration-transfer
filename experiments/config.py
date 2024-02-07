@@ -3,6 +3,8 @@ import argparse
 import gymnasium as gym
 import minigrid
 
+import stable_baselines3 as sb3
+from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.policies import BasePolicy
 import stable_baselines3.common.policies as sb3_policies
 
@@ -105,7 +107,7 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--rl-alg",
         "-a",
-        type=str,
+        type=module_enum(rlexplore, sb3, BaseAlgorithm),
         default=RL_ALG,
         help="The name of the stable baselines model to use. Examples include PPO, DQN, etc.",
     )

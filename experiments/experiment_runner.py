@@ -80,15 +80,17 @@ def run_experiment(
 
     if type(model_cls) == str:
         model_cls = get_all_subclasses_from_modules(
-            rlexplore, sb3, super_cls=BaseAlgorithm
-        )[model_cls]
+            rlexplore, sb3, super_cls=BaseAlgorithm, lower_case_keys=True
+        )[model_cls.lower()]
 
     wrapper_classes = get_all_subclasses_from_modules(
-        minigrid.wrappers, gym.wrappers, super_cls=gym.Wrapper
+        minigrid.wrappers, gym.wrappers, super_cls=gym.Wrapper, lower_case_keys=True
     )
     for i in range(len(wrappers)):
         wrappers[i] = (
-            wrapper_classes[wrappers[i]] if type(wrappers[i]) == str else wrappers[i]
+            wrapper_classes[wrappers[i].lower()]
+            if type(wrappers[i]) == str
+            else wrappers[i]
         )
 
     if type(policy) == str:
