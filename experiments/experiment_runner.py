@@ -102,9 +102,9 @@ def run_experiment(
     for run_num in range(n_runs):
         model_name = f"{experiment_name}_{timestamp}_{run_num}_{n_runs}"
         model_file_path = f"models/{model_name}"
-        os.makedirs(model_file_path, exist_ok=True)
 
         if log and use_wandb:
+            os.makedirs(model_file_path, exist_ok=True)
             wandb_run = wandb.init(
                 id=model_name,
                 project=wandb_project_name,
@@ -191,6 +191,7 @@ def run_experiment(
         )
 
         if save_model and (not use_wandb or not log):
+            os.makedirs(model_file_path, exist_ok=True)
             model.save(f"{model_file_path}/final.zip")
 
 
