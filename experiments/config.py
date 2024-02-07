@@ -21,7 +21,7 @@ novgrid_config.N_ENVS = 5
 
 EXPERIMENT_NAME = None
 EXPERIMENT_PREFIX = "novgrid_"
-EXPERIMENT_SUFFIX = ""
+EXPERIMENT_SUFFIX = "_re3"
 
 RL_ALG = IR_PPO
 RL_ALG_KWARGS = dict(
