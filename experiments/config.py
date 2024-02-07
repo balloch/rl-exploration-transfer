@@ -100,7 +100,7 @@ def make_parser() -> argparse.ArgumentParser:
         "--experiment-suffix",
         "-es",
         type=str,
-        default=EXPERIMENT_PREFIX,
+        default=EXPERIMENT_SUFFIX,
         help="The suffix for the experiment name to use when the experiment name is not explicitly defined.",
     )
 
