@@ -43,21 +43,19 @@ class NGU(object):
         self.kappa = kappa
 
         if len(self.ob_shape) == 3:
-            self.predictor_network = CnnEncoder(
-                kwargs={'in_channels': self.ob_shape[0], 'latent_dim': latent_dim})
-            self.target_network = CnnEncoder(
-                kwargs={'in_channels': self.ob_shape[0], 'latent_dim': latent_dim})
+            self.predictor_network = CnnEncoder()
+            self.target_network = CnnEncoder(obs_shape=self.ob_shape, latent_dim=latent_dim)
         else:
             self.predictor_network = MlpEncoder(
-                kwargs={'input_dim': self.ob_shape[0], 'latent_dim': latent_dim}
+                obs_shape=self.ob_shape, latent_dim=latent_dim
             )
             self.predictor_network = MlpEncoder(
-                kwargs={'input_dim': self.ob_shape[0], 'latent_dim': latent_dim}
+                obs_shape=self.ob_shape, latent_dim=latent_dim
             )
 
         if len(self.ob_shape) == 3:
             # use a random network
-            self.embedding_network = CnnEncoder(kwargs={'in_channels': self.ob_shape[0], 'latent_dim': latent_dim})
+            self.embedding_network = CnnEncoder(obs_shape=self.ob_shape, latent_dim=latent_dim)
 
         self.embedding_network.to(device)
         self.predictor_network.to(self.device)
