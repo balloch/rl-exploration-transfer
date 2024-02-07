@@ -1,4 +1,5 @@
 import json
+from utils import get_all_subclasses_from_modules
 
 str2bool = lambda s: s.lower() in [
     "true",
@@ -26,8 +27,10 @@ def tup(t):
     return f
 
 
-def module_enum(*mods):
-    mod_dict = {k.lower(): v for mod in reversed(mods) for k, v in vars(mod).items()}
+def module_enum(*mods, super_cls_filter=None):
+    mod_dict = get_all_subclasses_from_modules(
+        *mods, super_cls=super_cls_filter, lower_case_keys=True
+    )
     f = lambda s: mod_dict[s.lower()]
     joiner = f".\\*/"
     f.__name__ = f"{joiner.join([mod.__name__ for mod in mods])}.\\*"
