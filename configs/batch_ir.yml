@@ -1,0 +1,6 @@
+total_time_steps: 40000
+novelty_step: 25000
+env_configs_file: door_key_change
+n_runs: 1
+log: true
+save_model: false
