@@ -4,6 +4,8 @@ import argparse
 import json
 import yaml
 
+from utils import deep_update
+
 supported_exts_loaders = {
     "json": json.load,
     "yml": yaml.safe_load,
@@ -97,12 +99,12 @@ def get_args(
             if ext not in supported_exts:
                 raise NotImplementedError(f"Extension {ext} is not supported")
             configs_dict = supported_exts_loaders[ext](f)
-            args_dict.update(configs_dict)
+            deep_update(args_dict, configs_dict)
 
     parser = __clear_defaults(parser)
 
     set_args_dict = vars(parser.parse_args())
-    args_dict.update(set_args_dict)
+    deep_update(args_dict, set_args_dict)
 
     return args
 

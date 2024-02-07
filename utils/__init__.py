@@ -1,3 +1,4 @@
+import collections.abc
 import inspect
 
 
@@ -15,3 +16,12 @@ def get_all_subclasses_from_modules(*ms, super_cls=None, lower_case_keys=True):
             and (super_cls is None or issubclass(obj, super_cls)),
         )
     }
+
+
+def deep_update(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.abc.Mapping):
+            d[k] = deep_update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
