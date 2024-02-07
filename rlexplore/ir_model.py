@@ -54,7 +54,10 @@ def create_on_policy_ir_class(policy_cls: Type[OnPolicyAlgorithm]):
             if result:
                 if self.exploration_alg is not None:
                     intrinsic_rewards = self.exploration_alg.compute_irs(
-                        rollouts={"observations": self.rollout_buffer.observations},
+                        rollouts={
+                            "observations": self.rollout_buffer.observations,
+                            "actions": self.rollout_buffer.actions,
+                        },
                         time_steps=self.num_timesteps,
                         **self.compute_irs_kwargs,
                     )
@@ -105,8 +108,14 @@ def create_off_policy_ir_class(policy_cls: Type[OffPolicyAlgorithm]):
                         .numpy()[:, np.newaxis, :]
                         .astype(np.float32)
                     )
+                    inp_actions = (
+                        torch.clone(samples.actions)
+                        .cpu()
+                        .numpy()[:, np.newaxis, :]
+                        .astype(np.float32)
+                    )
                     intrinsic_rewards = self.exploration_alg.compute_irs(
-                        rollouts={"observations": inp_obs},
+                        rollouts={"observations": inp_obs, "actions": inp_actions},
                         time_steps=self.num_timesteps,
                         **self.compute_irs_kwargs,
                     )
