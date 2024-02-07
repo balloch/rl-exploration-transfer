@@ -1,4 +1,5 @@
 from rlexplore.networks.inverse_forward_networks import InverseForwardDynamicsModel, CnnEncoder
+from rlexplore.networks.random_encoder import MlpEncoder
 
 from torch import nn, optim
 from torch.nn import functional as F
@@ -54,6 +55,8 @@ class ICM(object):
 
         if len(self.ob_shape) == 3:
             self.cnn_encoder = CnnEncoder(kwargs={'in_channels': 4}).to(device)
+        else: 
+            self.mlp_encoder = MlpEncoder(self.ob_shape, 1024).to(device)
 
         self.optimizer = optim.Adam(lr=self.lr, params=self.inverse_forward_model.parameters())
 
@@ -72,7 +75,7 @@ class ICM(object):
         if len(self.ob_shape) == 3:
             encoded_obs = self.cnn_encoder(obs)
         else:
-            encoded_obs = obs
+            encoded_obs = self.mlp_encoder(obs)
 
         dataset = TensorDataset(encoded_obs[:-1], actions[:-1], encoded_obs[1:])
         loader = DataLoader(dataset=dataset, batch_size=self.batch_size, drop_last=True)
@@ -120,7 +123,7 @@ class ICM(object):
                 if len(self.ob_shape) == 3:
                     encoded_obs = self.cnn_encoder(obs[:, idx, :, :, :])
                 else:
-                    encoded_obs = obs[:, idx]
+                    encoded_obs = self.mlp_encoder(obs[:, idx])
                 pred_next_obs = self.inverse_forward_model(
                     encoded_obs[:-1], actions[:-1, idx], next_obs=None, training=False)
                 processed_next_obs = torch.clip(encoded_obs[1:], min=-1.0, max=1.0)
