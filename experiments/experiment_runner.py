@@ -134,6 +134,8 @@ def run_experiment(
         if seed is not None:
             env.seed(seed + 2 * run_num + 1)
 
+        env.reset()
+
         str_replacement_params = {
             "env": env,
             "envs": env,
