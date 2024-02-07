@@ -59,6 +59,7 @@ def run_experiment(
     override_timestamp: Optional[int] = None,
     print_novelty_box: bool = False,
     seed: int = None,
+    full_config: Dict[str, Any] = None,
 ):
     config = dict(locals().copy())
 

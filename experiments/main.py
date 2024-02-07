@@ -52,6 +52,7 @@ def main(args):
         wandb_verbose=args.wandb_verbose,
         print_novelty_box=args.print_novelty_box,
         save_model=args.save_model,
+        full_config=vars(args)
     )
 
 
