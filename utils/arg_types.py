@@ -31,7 +31,7 @@ def module_enum(*mods, super_cls_filter=None):
     mod_dict = get_all_subclasses_from_modules(
         *mods, super_cls=super_cls_filter, lower_case_keys=True
     )
-    f = lambda s: mod_dict[s.lower()]
+    f = lambda s: mod_dict.get(s.lower(), s)
     joiner = f".\\*/"
     f.__name__ = f"{joiner.join([mod.__name__ for mod in mods])}.\\*"
     return f

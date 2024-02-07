@@ -23,12 +23,16 @@ import json
 import inspect
 
 import rlexplore
+import minigrid
 from novgrid import NoveltyEnv
+from novgrid.env_configs import get_env_configs
+
+from utils import get_all_subclasses_from_modules
 
 
 def run_experiment(
     experiment_name: str = "experiment",
-    env_configs: Union[str, Dict[str, Any]] = "sample2.json",
+    env_configs: Union[str, Dict[str, Any]] = "sample",
     total_time_steps: int = 1_000_000,
     novelty_step: int = 250_000,
     n_envs: int = 1,
@@ -62,8 +66,11 @@ def run_experiment(
         os.environ["CUDA_VISIBLE_DEVICES"] = gpu_idx
 
     if type(config["env_configs"]) == str:
-        with open(config["env_configs"], "r") as f:
-            config["env_configs"] = json.load(f)
+        if os.path.exists(env_configs):
+            with open(env_configs, "r") as f:
+                config["env_configs"] = json.load(f)
+        else:
+            config["env_configs"] = get_env_configs(env_configs)
 
     device = torch.device(device)
     timestamp = int(time.time()) if override_timestamp is None else override_timestamp
@@ -72,40 +79,22 @@ def run_experiment(
     config["experiment_id"] = f"{experiment_name}_{timestamp}"
 
     if type(model_cls) == str:
-        model_cls = {
-            **{
-                k: v
-                for k, v in inspect.getmembers(
-                    sb3,
-                    lambda obj: inspect.isclass(obj) and issubclass(obj, BaseAlgorithm),
-                )
-            },
-            **{
-                k: v
-                for k, v in inspect.getmembers(
-                    rlexplore,
-                    lambda obj: inspect.isclass(obj) and issubclass(obj, BaseAlgorithm),
-                )
-            },
-        }[model_cls]
+        model_cls = get_all_subclasses_from_modules(
+            rlexplore, sb3, super_cls=BaseAlgorithm
+        )[model_cls]
+
+    wrapper_classes = get_all_subclasses_from_modules(
+        minigrid.wrappers, gym.wrappers, super_cls=gym.Wrapper
+    )
+    for i in range(len(wrappers)):
+        wrappers[i] = (
+            wrapper_classes[wrappers[i]] if type(wrappers[i]) == str else wrappers[i]
+        )
 
     if type(policy) == str:
-        policy = {
-            **{
-                k: v
-                for k, v in inspect.getmembers(
-                    rlexplore,
-                    lambda obj: inspect.isclass(obj) and issubclass(obj, BasePolicy),
-                )
-            },
-            **{
-                k: v
-                for k, v in inspect.getmembers(
-                    sb3_policies,
-                    lambda obj: inspect.isclass(obj) and issubclass(obj, BasePolicy),
-                )
-            },
-        }.get(policy, policy)
+        policy = get_all_subclasses_from_modules(
+            rlexplore, sb3_policies, super_cls=BasePolicy
+        ).get(policy, policy)
 
     for run_num in range(n_runs):
         model_name = f"{experiment_name}_{timestamp}_{run_num}_{n_runs}"
@@ -148,21 +137,11 @@ def run_experiment(
             "torch_device": device,
             "env_observation_shape": env.observation_space.shape,
             "env_action_shape": env.action_space.shape,
-            "None": None,
-            **{
-                k: v
-                for k, v in inspect.getmembers(
-                    sb3,
-                    lambda obj: inspect.isclass(obj) and issubclass(obj, BaseAlgorithm),
-                )
-            },
-            **{
-                k: v
-                for k, v in inspect.getmembers(
-                    rlexplore,
-                    lambda obj: inspect.isclass(obj),
-                )
-            },
+            "none": None,
+            **get_all_subclasses_from_modules(
+                sb3, super_cls=BaseAlgorithm, lower_case_keys=True
+            ),
+            **get_all_subclasses_from_modules(rlexplore, lower_case_keys=True),
         }
 
         def replace_all_env_based_params(d):
@@ -171,8 +150,8 @@ def run_experiment(
             for k in d:
                 if type(d[k]) == dict:
                     replace_all_env_based_params(d[k])
-                elif type(d[k]) == str and d[k] in str_replacement_params:
-                    d[k] = str_replacement_params[d[k]]
+                elif type(d[k]) == str and d[k].lower() in str_replacement_params:
+                    d[k] = str_replacement_params[d[k].lower()]
 
         if model_kwargs is None:
             model_kwargs = {}
