@@ -1,3 +1,5 @@
+pygame 2.5.2 (SDL 2.28.2, Python 3.8.18)
+Hello from the pygame community. https://www.pygame.org/contribute.html
 # Intrinsic Reward NovGrid Runner
 An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training.
 ## Run Command
@@ -49,9 +51,9 @@ Further, different environment specifications can be specified within this json,
 |--step-delay|-sd            |step_delay     |0.0                 |float          |The amount of delay in seconds between each step call.                                                                  |
 |--experiment-name|-en            |experiment_name|None                |str            |The name of the experiment.                                                                                             |
 |--experiment-prefix|-ep            |experiment_prefix|novgrid_            |str            |The prefix for the experiment name to use when the experiment name is not explicitly defined.                           |
-|--experiment-suffix|-es            |experiment_suffix|novgrid_            |str            |The suffix for the experiment name to use when the experiment name is not explicitly defined.                           |
-|--rl-alg  |-a             |rl_alg         |IR_PPO              |str            |The name of the stable baselines model to use. Examples include PPO, DQN, etc.                                          |
-|--rl-alg-kwargs|-ak            |rl_alg_kwargs  |{'learning_rate': 0.001, 'n_steps': 2048, 'batch_size': 256, 'n_epochs': 4, 'gamma': 0.99, 'gae_lambda': 0.95, 'clip_range': 0.2, 'ent_coef': 0.01, 'vf_coef': 0.5, 'max_grad_norm': 0.5, 'ir_alg_cls': 'RE3', 'ir_alg_kwargs': {'obs_shape': 'env_observation_shape', 'action_shape': 'env_action_shape', 'device': 'torch_device', 'latent_dim': 128, 'beta': 0.01, 'kappa': 0.001}, 'compute_irs_kwargs': {'k': 3}}|json           |The kwargs to pass to the RL algorithm. These include the intrinsic reward class name and kwargs if using an IR model.  |
+|--experiment-suffix|-es            |experiment_suffix|                    |str            |The suffix for the experiment name to use when the experiment name is not explicitly defined.                           |
+|--rl-alg  |-a             |rl_alg         |PPO                 |rlexplore.\*/stable_baselines3.\*/BaseAlgorithm.\*|The name of the stable baselines model to use. Examples include PPO, DQN, etc.                                          |
+|--rl-alg-kwargs|-ak            |rl_alg_kwargs  |{}                  |json           |The kwargs to pass to the RL algorithm. These include the intrinsic reward class name and kwargs if using an IR model.  |
 |--policy  |-p             |policy         |MlpPolicy           |rlexplore.\*/stable_baselines3.common.policies.\*|The type of policy to use. Examples include MlpPolicy, CnnPolicy, etc.                                                  |
 |--policy-kwargs|-pk            |policy_kwargs  |{}                  |json           |The kwargs to pass to the policy.                                                                                       |
 |--wrappers|-w             |wrappers       |[<class 'minigrid.wrappers.ImgObsWrapper'>, <class 'gymnasium.wrappers.flatten_observation.FlattenObservation'>]|minigrid.wrappers.\*/minigrid.wrappers.\*|The wrappers to use on the environment.                                                                                 |
