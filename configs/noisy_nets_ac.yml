@@ -1,0 +1,3 @@
+policy: NoisyActorCriticPolicy
+policy_kwargs:
+  num_noisy_layers: 2

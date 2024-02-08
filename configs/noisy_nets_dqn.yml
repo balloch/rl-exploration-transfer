@@ -1,0 +1,4 @@
+policy: NoisyDQNPolicy
+policy_kwargs:
+  num_noisy_layers: 2
+  
