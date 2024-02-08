@@ -104,7 +104,7 @@ class NGU(object):
                     encoded_obs = self.embedding_network(obs[:, idx])
 
                 episodic_rewards = self.pseudo_counts(encoded_obs)
-                intrinsic_rewards[:-1, idx] = episodic_rewards[:-1] * life_long_rewards
+                intrinsic_rewards[:-1, idx] = (episodic_rewards[:-1] * life_long_rewards)[0]
 
         # update the rnd module
         self.update(rollouts)
@@ -145,7 +145,8 @@ class NGU(object):
             ob_dist = ob_dist[:k]
             dist = ob_dist.cpu().numpy()
             # TODO: moving average
-            dist = dist / np.mean(dist)
+            if np.mean(dist) > 0:
+                dist = dist / np.mean(dist)
             dist = np.max(dist - kernel_cluster_distance, 0)
             kernel = kernel_epsilon / (dist + kernel_epsilon)
             s = np.sqrt(np.sum(kernel)) + c
