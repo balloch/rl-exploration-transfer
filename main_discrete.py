@@ -29,10 +29,10 @@ if __name__ == "__main__":
     print(obs['image'].flatten())
     obs = obs['image'].flatten()
     n_states = obs.shape[0]
-    ACTION_SPACE_LIST = [0,1,2]
+    ACTION_SPACE_LIST = [i for i in range(env.action_space)]
     ACTION_SPACE= len(ACTION_SPACE_LIST)
     n_actions = 1 #ACTION_SPACE
-    action_bounds = [0,2] # [test_env.action_space.low[0], test_env.action_space.high[0]]
+    action_bounds = [ACTION_SPACE_LIST[0],ACTION_SPACE_LIST[-1]]#[0,2] # [test_env.action_space.low[0], test_env.action_space.high[0]]
 
     params.update({"n_states": n_states,
                    "n_actions": n_actions,
