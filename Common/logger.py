@@ -27,8 +27,8 @@ class Logger:
     @staticmethod
     def _create_wights_folder(dir):
         if not os.path.exists("Checkpoints"):
-            os.mkdir("Checkpoints")
-        os.mkdir("Checkpoints/" + dir)
+            os.makedirs("Checkpoints",exist_ok=True)
+        os.makedirs("Checkpoints/" + dir,exist_ok=True)
 
     def _log_params(self):
         with SummaryWriter("Logs/" + self.log_dir) as writer:
