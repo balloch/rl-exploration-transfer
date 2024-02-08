@@ -220,7 +220,7 @@ def make_parser() -> argparse.ArgumentParser:
         help="The torch device string to use.",
     )
     parser.add_argument(
-        "--gpu-idx", "-gi", type=int, default=GPU_IDX, help="The gpu index to use."
+        "--gpu-idx", "-gi", type=str, default=GPU_IDX, help="The gpu index to use."
     )
 
     return parser

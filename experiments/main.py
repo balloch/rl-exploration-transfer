@@ -50,6 +50,8 @@ def main(args):
         wandb_model_save_freq=args.wandb_model_save_freq,
         wandb_gradient_save_freq=args.wandb_gradient_save_freq,
         wandb_verbose=args.wandb_verbose,
+        device=args.device,
+        gpu_idx=args.gpu_idx,
         print_novelty_box=args.print_novelty_box,
         save_model=args.save_model,
         full_config=vars(args)
