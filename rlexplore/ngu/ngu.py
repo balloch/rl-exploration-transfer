@@ -56,6 +56,8 @@ class NGU(object):
         if len(self.ob_shape) == 3:
             # use a random network
             self.embedding_network = CnnEncoder(obs_shape=self.ob_shape, latent_dim=latent_dim)
+        else:
+            self.embedding_network = MlpEncoder(obs_shape=self.ob_shape, latent_dim=latent_dim)
 
         self.embedding_network.to(device)
         self.predictor_network.to(self.device)
