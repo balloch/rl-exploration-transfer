@@ -71,7 +71,7 @@ Further, different environment specifications can be specified within this json,
 |--print-novelty-box|-pnb           |print_novelty_box|True                |bool           |Whether or not to print the novelty box when novelty occurs.                                                            |
 |--verbose |-v             |verbose        |1                   |int            |The verbosity parameter for model.learn.                                                                                |
 |--device  |-d             |device         |cuda:0              |str            |The torch device string to use.                                                                                         |
-|--gpu-idx |-gi            |gpu_idx        |None                |int            |The gpu index to use.                                                                                                   |
+|--gpu-idx |-gi            |gpu_idx        |None                |str            |The gpu index to use.                                                                                                   |
 |-c        |--config-file  |config_file    |[]                  |str            |A config file specifying some new default arguments (that can be overridden by command line args). This can be a list of config files (json/yml/yaml) with whatever arguments are set in them in order of lowest to highest priority. Usage: --config-file test.json test2.json.|
 
 
