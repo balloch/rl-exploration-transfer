@@ -17,6 +17,12 @@ from rlexplore.ngu import NGU
 from rlexplore.rnd import RND
 from rlexplore.icm import ICM
 from rlexplore.girm import GIRM
+from rlexplore.noisy_nets import (
+    NoisyActorCriticPolicy,
+    NoisyActorCriticCnnPolicy,
+    NoisyDQNPolicy,
+    NoisyDQNCnnPolicy,
+)
 from rlexplore.utils import create_env, cleanup_log_dir
 
 from rlexplore.ir_model import *
