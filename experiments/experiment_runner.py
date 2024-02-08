@@ -83,6 +83,10 @@ def run_experiment(
         model_cls = get_all_subclasses_from_modules(
             rlexplore, sb3, super_cls=BaseAlgorithm, lower_case_keys=True
         )[model_cls.lower()]
+    if type(policy) == str:
+        policy = get_all_subclasses_from_modules(
+            rlexplore, sb3_policies, super_cls=BasePolicy
+        ).get(policy.lower(), policy)
 
     wrapper_classes = get_all_subclasses_from_modules(
         minigrid.wrappers, gym.wrappers, super_cls=gym.Wrapper, lower_case_keys=True
@@ -93,11 +97,6 @@ def run_experiment(
             if type(wrappers[i]) == str
             else wrappers[i]
         )
-
-    if type(policy) == str:
-        policy = get_all_subclasses_from_modules(
-            rlexplore, sb3_policies, super_cls=BasePolicy
-        ).get(policy, policy)
 
     for run_num in range(n_runs):
         model_name = f"{experiment_name}_{timestamp}_{run_num}_{n_runs}"
