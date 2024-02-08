@@ -49,9 +49,7 @@ class NGU(object):
             self.predictor_network = MlpEncoder(
                 obs_shape=self.ob_shape, latent_dim=latent_dim
             )
-            self.predictor_network = MlpEncoder(
-                obs_shape=self.ob_shape, latent_dim=latent_dim
-            )
+            self.target_network = MlpEncoder(obs_shape=self.ob_shape, latent_dim=latent_dim)
 
         if len(self.ob_shape) == 3:
             # use a random network
@@ -103,7 +101,7 @@ class NGU(object):
                 if len(self.ob_shape) == 3:
                     encoded_obs = self.embedding_network(obs[:, idx])
                 else:
-                    encoded_obs = obs[:, idx]
+                    encoded_obs = self.embedding_network(obs[:, idx])
 
                 episodic_rewards = self.pseudo_counts(encoded_obs)
                 intrinsic_rewards[:-1, idx] = episodic_rewards[:-1] * life_long_rewards
