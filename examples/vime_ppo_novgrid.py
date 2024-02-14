@@ -6,9 +6,10 @@ parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
 import argparse
-import gym
 import gym_minigrid
-import novgrid
+import gymnasium as gym
+import torch
+import novelty_env as novgrid
 from novgrid.novelty_generation import novelty_wrappers
 from stable_baselines3 import PPO
 import time
@@ -20,6 +21,8 @@ LOAD_MODEL = False
 TIMESTEPS = 3000000
 ENV_NAME = "MiniGrid-DoorKey-8x8-v0"
 VIME = False
+
+
 
 def get_args():
     str2bool = lambda s: s.lower() in ["true", "1", "t", "y", "yes", "yeah"]
@@ -43,6 +46,15 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
     def observation(self, obs):
         return obs["image"]
 
+class ImageWrapper(gym.ObservationWrapper):
+    def __init__(self, env: gym.Env):
+        super().__init__(env)
+        self.observation_space = gym.spaces.flatten_space(
+            self.observation_space["image"]
+        )
+
+    def observation(self, obs: Any) -> Any:
+        return obs["image"].flatten()
 
 if __name__ == "__main__":
     args = get_args()
@@ -53,13 +65,14 @@ if __name__ == "__main__":
     model_file_path = f"models/{model_name}"
     log_path = f"logs/{model_name}"
 
-    env = gym.make(args.env_id)
+    env = novgrid.NoveltyEnv(
+        env_configs="sample.json",
+        novelty_step=250000,
+        n_envs=1,
+        wrappers=[ImageWrapper],
+        print_novelty_box=True,
+    )
 
-    env = novelty_wrappers.DoorKeyChange(env, novelty_episode=args.novelty_episode)
-
-    env = minigrid.wrappers.RGBImgObsWrapper(env, tile_size=8)
-
-    env = StableBaselinesWrapper(env)
 
     model = PPO(
         policy=VimeActorCriticCnnPolicy,

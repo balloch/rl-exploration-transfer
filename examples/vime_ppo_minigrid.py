@@ -13,6 +13,7 @@ import time
 import gym_minigrid
 from stable_baselines3 import PPO
 from stable_baselines3.common.utils import safe_mean
+
 # to do: add after implementation 
 from rlexplore.vime.vime_policy import VimeActorCriticCnnPolicy
 
@@ -54,6 +55,7 @@ if __name__ == "__main__":
     model_file_path = f"models/{model_name}"
     log_path = f"logs/{model_name}"
 
+    
     env = gym.make(args.env_id)
 
     env = gym_minigrid.wrappers.RGBImgObsWrapper(env, tile_size=8)
