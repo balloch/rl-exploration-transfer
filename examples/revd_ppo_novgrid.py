@@ -44,6 +44,15 @@ class StableBaselinesWrapper(gym.ObservationWrapper):
     def observation(self, obs):
         return obs["image"].flatten()
 
+class ImageWrapper(gym.ObservationWrapper):
+    def __init__(self, env: gym.Env):
+        super().__init__(env)
+        self.observation_space = gym.spaces.flatten_space(
+            self.observation_space["image"]
+        )
+
+    def observation(self, obs: Any) -> Any:
+        return obs["image"].flatten()
 
 def make_parser():
     parser = novgrid.make_parser()
@@ -51,7 +60,7 @@ def make_parser():
     return parser
 
 
-def main(args):
+def main1(args):
     device = torch.device("cuda:0")
 
     num_episodes = int(args.total_steps / args.n_steps / args.num_envs)
@@ -203,8 +212,55 @@ def main(args):
 
     model.save(model_file_path)
 
+def main2(args):
+    device = torch.device("cuda:0")
+    wrappers = [ImageWrapper]
+
+    timestamp = int(time.time())
+
+    env_full_name = "novgrid_empty"
+    exploration_name = "re3"
+    rl_alg_name = "ppo"
+    model_name = f"{env_full_name}_{rl_alg_name}_{exploration_name}_{args.total_time_steps}_{timestamp}"
+    model_file_path = f"models/{model_name}"
+
+    env = novgrid.NoveltyEnv(
+        env_configs=args.config_file,
+        novelty_step=args.novelty_step,
+        n_envs=args.n_envs,
+        wrappers=wrappers,
+        print_novelty_box=True,
+    )
+
+    model = IR_PPO(
+        policy="MlpPolicy",
+        env=env,
+        verbose=1,
+        n_steps=2048,
+        tensorboard_log="./logs/" if args.log else None,
+        ir_alg_cls=REVD,
+        ir_alg_kwargs=dict(
+            obs_shape=env.observation_space.shape,
+            action_shape=env.action_space.shape,
+            device=device,
+            latent_dim=128,
+            beta=1e-2,
+            kappa=1e-5,
+        ),
+        compute_irs_kwargs=dict(
+            k=3,
+        ),
+    )
+    model.learn(
+        total_timesteps=args.total_time_steps,
+        log_interval=1,
+        tb_log_name=model_name,
+    )
+
+    if args.save_model:
+        model.save(model_file_path)
 
 if __name__ == "__main__":
     args = make_parser().parse_args()
 
-    main(args)
+    main2(args)

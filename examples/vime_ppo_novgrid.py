@@ -12,6 +12,7 @@ import torch
 import novelty_env as novgrid
 from novgrid.novelty_generation import novelty_wrappers
 from stable_baselines3 import PPO
+from rlexplore.ir_model import IR_PPO, IR_DQN
 import time
 
 from rlexplore.vime.vime_policy import VimeActorCriticCnnPolicy
@@ -74,7 +75,7 @@ if __name__ == "__main__":
     )
 
 
-    model = PPO(
+    model = IR_PPO(
         policy=VimeActorCriticCnnPolicy,
         env=env,
         verbose=1,
