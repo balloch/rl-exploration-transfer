@@ -6,10 +6,13 @@ parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
 import argparse
-import gym
+import gymnasium as gym
+import torch
+import time
+
 import gym_minigrid
 from stable_baselines3 import PPO
-import time
+from stable_baselines3.common.utils import safe_mean
 # to do: add after implementation 
 from rlexplore.vime.vime_policy import VimeActorCriticCnnPolicy
 
