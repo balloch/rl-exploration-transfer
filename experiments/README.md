@@ -1,5 +1,3 @@
-pygame 2.5.2 (SDL 2.28.2, Python 3.8.18)
-Hello from the pygame community. https://www.pygame.org/contribute.html
 # Intrinsic Reward NovGrid Runner
 An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training.
 ## Run Command
@@ -56,7 +54,7 @@ Further, different environment specifications can be specified within this json,
 |--rl-alg-kwargs|-ak            |rl_alg_kwargs  |{}                  |json           |The kwargs to pass to the RL algorithm. These include the intrinsic reward class name and kwargs if using an IR model.  |
 |--policy  |-p             |policy         |MlpPolicy           |rlexplore.\*/stable_baselines3.common.policies.\*|The type of policy to use. Examples include MlpPolicy, CnnPolicy, etc.                                                  |
 |--policy-kwargs|-pk            |policy_kwargs  |{}                  |json           |The kwargs to pass to the policy.                                                                                       |
-|--wrappers|-w             |wrappers       |[<class 'minigrid.wrappers.ImgObsWrapper'>, <class 'gymnasium.wrappers.flatten_observation.FlattenObservation'>]|minigrid.wrappers.\*/minigrid.wrappers.\*|The wrappers to use on the environment.                                                                                 |
+|--wrappers|-w             |wrappers       |[<class 'minigrid.wrappers.ImgObsWrapper'>, <class 'gymnasium.wrappers.flatten_observation.FlattenObservation'>]|rlexplore.\*/minigrid.wrappers.\*/gymnasium.wrappers.\*|The wrappers to use on the environment.                                                                                 |
 |--wandb-project-name|-wpn           |wandb_project_name|rl-transfer-explore |str            |The project name to save under in wandb.                                                                                |
 |--wandb-save-videos|-wsv           |wandb_save_videos|False               |bool           |Whether or not to save videos to wandb.                                                                                 |
 |--wandb-video-freq|-wvf           |wandb_video_freq|2000                |int            |How often to save videos to wandb.                                                                                      |
