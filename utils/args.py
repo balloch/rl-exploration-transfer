@@ -64,7 +64,7 @@ def add_config_file_arg(parser: argparse.ArgumentParser) -> argparse.ArgumentPar
 def get_args(
     parser: argparse.ArgumentParser,
     configs_root: str = "",
-    default_ext: str = "json",
+    default_ext: str = "yml",
 ) -> argparse.Namespace:
     """Gets the arguments from an argparse parser with the added functionality of being able to use a config file. The parser load arguments in the following priority (for each argument it will go down the list until a value is found):
            - Command line arguments
@@ -74,7 +74,7 @@ def get_args(
     Args:
         parser (argparse.ArgumentParser): The argument parser to use (will be modified, do not use after this method)
         configs_root (str, optional): The root to use for the config files. Defaults to "".
-        default_ext (str, optional): The default extension to use if none is specified. Defaults to "json".
+        default_ext (str, optional): The default extension to use if none is specified. Defaults to "yml".
 
     Returns:
         argparse.Namespace: returns the parsed arguments.
