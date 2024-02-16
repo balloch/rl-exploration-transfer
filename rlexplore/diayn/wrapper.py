@@ -1,4 +1,4 @@
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Optional
 
 import numpy as np
 import gymnasium as gym
@@ -16,7 +16,7 @@ class DiaynSkillWrapper(gym.ObservationWrapper):
             self.skill_key: self.skill_space
         })
 
-    def reset(self, *, seed: int | None = None, options: Dict[str, Any] | None = None) -> Tuple[Any, Dict[str, Any]]:
+    def reset(self, *, seed: Optional[int] = None, options: Optional[Dict[str, Any]] = None) -> Tuple[Any, Dict[str, Any]]:
         self.current_skill = self.sample_skill()
         return super().reset(seed=seed, options=options)
 

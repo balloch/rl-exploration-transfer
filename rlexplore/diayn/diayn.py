@@ -2,6 +2,7 @@ from rlexplore.networks.random_encoder import MlpEncoder, CnnEncoder
 
 
 from torch import nn, optim
+from torch.nn import functional as F
 import torch
 import numpy as np
 import gymnasium as gym
@@ -45,29 +46,47 @@ class Diayn(object):
         self.ob_shape = envs.observation_space[self.state_key].shape
         if isinstance(envs.observation_space[self.skill_key], gym.spaces.Discrete):
             self.skill_shape = envs.observation_space[self.skill_key].n
+            self.skill_type = gym.spaces.Discrete
+            self.dm_loss = nn.CrossEntropyLoss()
         elif isinstance(envs.observation_space[self.skill_key], gym.spaces.Box):
             self.skill_shape = envs.observation_space[self.skill_key].shape
+            self.skill_type = gym.spaces.Box
             assert len(self.skill_shape) == 1
             self.skill_shape = self.skill_shape[0]
+            self.dm_loss = nn.MSELoss()
         else:
             raise NotImplementedError
 
-        self.dm_loss = nn.MSELoss()
 
         if len(self.ob_shape) == 3:
             self.discriminator = CnnEncoder(self.ob_shape, self.skill_shape).to(self.device)
         else:
             self.discriminator = MlpEncoder(self.ob_shape, self.skill_shape).to(self.device)
 
+        if self.skill_type == gym.spaces.Discrete:
+            self.discriminator.main.append(nn.Softmax())
+
         self.optimizer = optim.Adam(lr=self.lr, params=self.discriminator.parameters())
 
     def compute_irs(self, rollouts, time_steps):
-        import pdb; pdb.set_trace()
         beta_t = self.beta * np.power(1. - self.kappa, time_steps)
-        n_steps = rollouts['observations'].shape[0]
-        n_envs = rollouts['observations'].shape[1]
+        n_steps = rollouts["observations"]["state"].shape[0]
+        n_envs = rollouts["observations"]["state"].shape[1]
 
         intrinsic_rewards = np.zeros(shape=(n_steps, n_envs, 1))
 
+        obs = torch.from_numpy(rollouts["observations"]["state"])
+        skills = torch.from_numpy(rollouts["observations"]["skills"])
+
+        if self.skill_type == gym.spaces.Box:
+            skills = F.one_hot(skills[:, :, 0].to(torch.int64), self.skill_shape).float()
+        
+        obs = obs.to(self.device)
+        skills = skills.to(self.device)
+
+        with torch.no_grad():
+            for idx in range(n_envs):
+                discriminator_output = self.discriminator(obs[:, idx])
+                                
 
         return beta_t * intrinsic_rewards
