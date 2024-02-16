@@ -1,4 +1,4 @@
-from typing import Type, Union, Dict, Any, Optional, List
+from typing import Type, Dict, Any, Optional
 
 import numpy as np
 import torch
@@ -11,7 +11,6 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.on_policy_algorithm import OnPolicyAlgorithm
 from stable_baselines3.common.off_policy_algorithm import OffPolicyAlgorithm
 
-from stable_baselines3 import PPO, DQN
 import stable_baselines3 as sb3
 import inspect
 
