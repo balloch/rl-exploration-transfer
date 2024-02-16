@@ -1,0 +1,11 @@
+rl_alg_kwargs:
+  ir_alg_cls: rnd
+  ir_alg_kwargs:
+    obs_shape: env_observation_shape
+    action_shape: env_action_shape
+    latent_dim: 128
+    lr: 0.001
+    batch_size: 32
+    beta: 0.0005
+    kappa: 0
+experiment_suffix: _rnd

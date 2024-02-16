@@ -1,0 +1,9 @@
+rl_alg_kwargs:
+  ir_alg_cls: re3
+  ir_alg_kwargs:
+    obs_shape: env_observation_shape
+    action_shape: env_action_shape
+    latent_dim: 128
+    beta: 0.01
+    kappa: 0
+experiment_suffix: _re3

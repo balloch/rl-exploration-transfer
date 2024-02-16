@@ -1,11 +1,11 @@
 #!/usr/bin/bash
-./scripts/run_experiment.sh vanilla_ppo.yml base.yml --experiment-suffix _none $@
-./scripts/run_ir_experiment.sh re3 '"obs_shape": "env_observation_shape", "action_shape": "env_action_shape", "latent_dim": 128, "beta": 0.01, "kappa": 0.0' base.yml $@ --experiment-suffix _re3
-./scripts/run_ir_experiment.sh rise '"obs_shape": "env_observation_shape", "action_shape": "env_action_shape", "latent_dim": 128, "beta": 0.01, "kappa": 0.0' base.yml $@ --experiment-suffix _rise
-./scripts/run_ir_experiment.sh ride '"obs_shape": "env_observation_shape", "action_shape": "env_action_shape", "latent_dim": 128, "beta": 0.01, "kappa": 0.0' base.yml $@ --experiment-suffix _ride
-./scripts/run_ir_experiment.sh revd '"obs_shape": "env_observation_shape", "action_shape": "env_action_shape", "latent_dim": 128, "beta": 0.01, "kappa": 0.0' base.yml $@ --experiment-suffix _revd
-./scripts/run_ir_experiment.sh rnd '"obs_shape": "env_observation_shape", "action_shape": "env_action_shape", "latent_dim": 128, "lr": 0.001, "batch_size": 32, "beta": 0.0005, "kappa": 0.0' base.yml $@ --experiment-suffix _rnd
-./scripts/run_ir_experiment.sh ngu '"envs": "envs", "latent_dim": 128, "lr": 0.001, "batch_size": 32, "beta": 0.3, "kappa": 0.0' base.yml $@ --experiment-suffix _ngu
-./scripts/run_ir_experiment.sh icm '"envs": "envs", "lr": 0.001, "batch_size": 32, "beta": 0.01, "kappa": 0.0' base.yml $@ --experiment-suffix _icm
-./scripts/run_ir_experiment.sh girm '"envs": "envs", "latent_dim": 128, "lr": 0.001, "batch_size": 32, "lambd": 0.1, "beta": 0.01, "kappa": 0.0' base.yml $@ --experiment-suffix _girm
-./scripts/run_experiment.sh vanilla_ppo.yml noisy_nets_ac.yml base.yml $@ --experiment-suffix _noisy
+./scripts/run_experiment.sh ppo.yml base.yml --experiment-suffix _none $@
+./scripts/run_experiment.sh re3.yml ir_ppo.yml base.yml $@
+./scripts/run_experiment.sh rise.yml ir_ppo.yml base.yml $@
+./scripts/run_experiment.sh ride.yml ir_ppo.yml base.yml $@
+./scripts/run_experiment.sh revd.yml ir_ppo.yml base.yml $@
+./scripts/run_experiment.sh rnd.yml ir_ppo.yml base.yml $@
+./scripts/run_experiment.sh ngu.yml ir_ppo.yml base.yml $@
+./scripts/run_experiment.sh icm.yml ir_ppo.yml base.yml $@
+./scripts/run_experiment.sh girm.yml ir_ppo.yml base.yml $@
+./scripts/run_experiment.sh ppo.yml noisy_nets_ac.yml base.yml $@
