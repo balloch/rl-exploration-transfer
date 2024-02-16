@@ -119,7 +119,6 @@ class NoisyActorCriticCnnPolicy(NoisyActorCriticPolicy):
         optimizer_kwargs: Optional[Dict[str, Any]] = None,
         num_noisy_layers: int = 2,
     ):
-        print(features_extractor_kwargs)
         super().__init__(
             observation_space,
             action_space,
