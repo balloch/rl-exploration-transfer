@@ -47,13 +47,13 @@ class Diayn(object):
         if isinstance(envs.observation_space[self.skill_key], gym.spaces.Discrete):
             self.skill_shape = envs.observation_space[self.skill_key].n
             self.skill_type = gym.spaces.Discrete
-            self.dm_loss = nn.CrossEntropyLoss()
+            self.discriminator_loss = nn.CrossEntropyLoss()
         elif isinstance(envs.observation_space[self.skill_key], gym.spaces.Box):
             self.skill_shape = envs.observation_space[self.skill_key].shape
             self.skill_type = gym.spaces.Box
             assert len(self.skill_shape) == 1
             self.skill_shape = self.skill_shape[0]
-            self.dm_loss = nn.MSELoss()
+            self.discriminator_loss = nn.MSELoss()
         else:
             raise NotImplementedError
 
@@ -78,7 +78,7 @@ class Diayn(object):
         obs = torch.from_numpy(rollouts["observations"]["state"])
         skills = torch.from_numpy(rollouts["observations"]["skills"])
 
-        if self.skill_type == gym.spaces.Box:
+        if self.skill_type == gym.spaces.Discrete:
             skills = F.one_hot(skills[:, :, 0].to(torch.int64), self.skill_shape).float()
         
         obs = obs.to(self.device)
@@ -87,6 +87,10 @@ class Diayn(object):
         with torch.no_grad():
             for idx in range(n_envs):
                 discriminator_output = self.discriminator(obs[:, idx])
-                                
+                true_skill = skills[:, idx]
+                if self.skill_type == gym.spaces.Discrete:
+                    intrinsic_rewards[:-1, idx] = np.log(discriminator_output[:, true_skill].cpu().numpy()) - np.log(1 / self.skill_shape)
+                elif self.skill_key == gym.spaces.Box:
+                    intrinsic_rewards[:-1, idx] = -F.mse_loss(discriminator_output, true_skill, reduction="mean").cpu().numpy()
 
         return beta_t * intrinsic_rewards
