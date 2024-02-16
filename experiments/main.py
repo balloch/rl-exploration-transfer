@@ -32,7 +32,7 @@ def main(args):
         total_time_steps=args.total_time_steps,
         novelty_step=args.novelty_step,
         n_envs=args.n_envs,
-        wrappers=[minigrid.wrappers.ImgObsWrapper, gym.wrappers.FlattenObservation],
+        wrappers=args.wrappers,
         model_cls=args.rl_alg,
         model_kwargs=dict(
             verbose=args.verbose,
