@@ -115,7 +115,7 @@ def make_parser() -> argparse.ArgumentParser:
         "--wrappers",
         "-w",
         type=module_enum(
-            minigrid.wrappers, minigrid.wrappers, super_cls_filter=gym.Wrapper
+            rlexplore, minigrid.wrappers, gym.wrappers, super_cls_filter=gym.Wrapper
         ),
         default=WRAPPERS,
         help="The wrappers to use on the environment.",
