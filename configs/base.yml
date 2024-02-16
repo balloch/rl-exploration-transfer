@@ -2,3 +2,4 @@ total_time_steps: 8000000
 novelty_step: 5000000
 env_configs_file: door_key_change
 n_runs: 10
+n_envs: 5
