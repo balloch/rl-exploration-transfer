@@ -18,6 +18,7 @@ rl_alg_kwargs:
     batch_size: 32
     beta: 1
     kappa: 0
+policy: MultiInputPolicy
 experiment_suffix: _diayn
 save_model: false
 log: false
