@@ -3,6 +3,7 @@ from rlexplore.networks.random_encoder import MlpEncoder, CnnEncoder
 
 from torch import nn, optim
 from torch.nn import functional as F
+from torch.utils.data import DataLoader, TensorDataset
 import torch
 import numpy as np
 import gymnasium as gym
@@ -68,6 +69,32 @@ class Diayn(object):
 
         self.optimizer = optim.Adam(lr=self.lr, params=self.discriminator.parameters())
 
+    def update(self, rollouts):
+        n_steps = rollouts["observations"]["state"].shape[0]
+        n_envs = rollouts["observations"]["state"].shape[1]
+
+        obs = torch.from_numpy(rollouts["observations"]["state"]).reshape(n_steps * n_envs, *self.ob_shape)
+        if self.skill_type == gym.spaces.Discrete:
+            skills = torch.from_numpy(rollouts["observations"]["skill"]).reshape((n_steps * n_envs, ))
+            skills = F.one_hot(skills.to(torch.int64), self.skill_shape).float()
+        else:
+            skills = torch.from_numpy(rollouts["observations"]["skill"]).reshape(n_steps * n_envs, self.skill_shape)
+        
+        obs.to(self.device)
+        skills.to(self.device)
+
+        dataset = TensorDataset(obs, skills)
+        loader = DataLoader(dataset=dataset, batch_size=self.batch_size, drop_last=True)
+
+        for (batch_obs, batch_skills) in loader:
+            pred_skill = self.discriminator(batch_obs)
+
+            loss = self.discriminator_loss(pred_skill, batch_skills)
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+
     def compute_irs(self, rollouts, time_steps):
         beta_t = self.beta * np.power(1. - self.kappa, time_steps)
         n_steps = rollouts["observations"]["state"].shape[0]
@@ -89,8 +116,10 @@ class Diayn(object):
                 discriminator_output = self.discriminator(obs[:, idx])
                 true_skill = skills[:, idx]
                 if self.skill_type == gym.spaces.Discrete:
-                    intrinsic_rewards[:-1, idx] = np.log(discriminator_output[:, true_skill].cpu().numpy()) - np.log(1 / self.skill_shape)
+                    intrinsic_rewards[:, idx] = np.log(discriminator_output[:, true_skill].cpu().numpy()) - np.log(1 / self.skill_shape)
                 elif self.skill_key == gym.spaces.Box:
-                    intrinsic_rewards[:-1, idx] = -F.mse_loss(discriminator_output, true_skill, reduction="mean").cpu().numpy()
+                    intrinsic_rewards[:, idx] = -F.mse_loss(discriminator_output, true_skill, reduction="mean").cpu().numpy()
+
+        self.update(rollouts)
 
         return beta_t * intrinsic_rewards
