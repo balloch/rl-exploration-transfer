@@ -7,7 +7,7 @@
 @Date ：2022/9/20 20:04 
 '''
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 from stable_baselines3.common.env_util import make_atari_env, make_vec_env
