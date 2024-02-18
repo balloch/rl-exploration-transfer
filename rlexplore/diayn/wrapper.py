@@ -5,12 +5,15 @@ import gymnasium as gym
 
 class DiaynSkillWrapper(gym.ObservationWrapper):
 
-    def __init__(self, env: gym.Env, skill_key="skill", state_key="state"):
+    def __init__(self, env: gym.Env, skill_size: int = 20, use_discrete_skills: bool = True, skill_key: str = "skill", state_key: str = "state"):
         super().__init__(env)
         self.state_key = state_key
         self.skill_key = skill_key
         self.state_space = self.observation_space
-        self.skill_space = gym.spaces.Box(0, 1, (5, ), np.float32)
+        if use_discrete_skills:
+            self.skill_space = gym.spaces.Discrete(skill_size)
+        else:
+            self.skill_space = gym.spaces.Box(0, 1, (skill_size, ), np.float32)
         self.observation_space = gym.spaces.Dict({
             self.state_key: self.state_space,
             self.skill_key: self.skill_space
