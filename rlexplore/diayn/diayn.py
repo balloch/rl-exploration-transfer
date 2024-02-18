@@ -11,16 +11,17 @@ import gymnasium as gym
 
 class Diayn(object):
 
-    def __init__(self, 
-                 envs, 
-                 device, 
-                 lr,
-                 batch_size,
-                 beta,
-                 kappa,
-                 skill_key="skill",
-                 state_key="state",
-                 ) -> None:
+    def __init__(
+        self,
+        envs,
+        device,
+        lr,
+        batch_size,
+        beta,
+        kappa,
+        skill_key="skill",
+        state_key="state",
+    ) -> None:
         """
         Diversity Is All You Need: Learning Skills Without a Reward Function (Adapted with task reward)
         Paper: https://arxiv.org/pdf/1802.06070.pdf
@@ -58,11 +59,14 @@ class Diayn(object):
         else:
             raise NotImplementedError
 
-
         if len(self.ob_shape) == 3:
-            self.discriminator = CnnEncoder(self.ob_shape, self.skill_shape).to(self.device)
+            self.discriminator = CnnEncoder(self.ob_shape, self.skill_shape).to(
+                self.device
+            )
         else:
-            self.discriminator = MlpEncoder(self.ob_shape, self.skill_shape).to(self.device)
+            self.discriminator = MlpEncoder(self.ob_shape, self.skill_shape).to(
+                self.device
+            )
 
         if self.skill_type == gym.spaces.Discrete:
             self.discriminator.main.append(nn.Softmax(-1))
@@ -73,20 +77,26 @@ class Diayn(object):
         n_steps = rollouts["observations"][self.state_key].shape[0]
         n_envs = rollouts["observations"][self.state_key].shape[1]
 
-        obs = torch.from_numpy(rollouts["observations"][self.state_key]).reshape(n_steps * n_envs, *self.ob_shape)
+        obs = torch.from_numpy(rollouts["observations"][self.state_key]).reshape(
+            n_steps * n_envs, *self.ob_shape
+        )
         if self.skill_type == gym.spaces.Discrete:
-            skills = torch.from_numpy(rollouts["observations"][self.skill_key]).reshape((n_steps * n_envs, ))
+            skills = torch.from_numpy(rollouts["observations"][self.skill_key]).reshape(
+                (n_steps * n_envs,)
+            )
             skills = F.one_hot(skills.to(torch.int64), self.skill_shape).float()
         elif self.skill_type == gym.spaces.Box:
-            skills = torch.from_numpy(rollouts["observations"][self.skill_key]).reshape(n_steps * n_envs, self.skill_shape)
-        
+            skills = torch.from_numpy(rollouts["observations"][self.skill_key]).reshape(
+                n_steps * n_envs, self.skill_shape
+            )
+
         obs = obs.to(self.device)
         skills = skills.to(self.device)
 
         dataset = TensorDataset(obs, skills)
         loader = DataLoader(dataset=dataset, batch_size=self.batch_size, drop_last=True)
 
-        for (batch_obs, batch_skills) in loader:
+        for batch_obs, batch_skills in loader:
             pred_skills = self.discriminator(batch_obs)
 
             loss = self.discriminator_loss(pred_skills, batch_skills)
@@ -96,7 +106,7 @@ class Diayn(object):
             self.optimizer.step()
 
     def compute_irs(self, rollouts, time_steps):
-        beta_t = self.beta * np.power(1. - self.kappa, time_steps)
+        beta_t = self.beta * np.power(1.0 - self.kappa, time_steps)
         n_steps = rollouts["observations"][self.state_key].shape[0]
         n_envs = rollouts["observations"][self.state_key].shape[1]
 
@@ -106,8 +116,10 @@ class Diayn(object):
         skills = torch.from_numpy(rollouts["observations"][self.skill_key])
 
         if self.skill_type == gym.spaces.Discrete:
-            skills = F.one_hot(skills[:, :, 0].to(torch.int64), self.skill_shape).float()
-        
+            skills = F.one_hot(
+                skills[:, :, 0].to(torch.int64), self.skill_shape
+            ).float()
+
         obs = obs.to(self.device)
         skills = skills.to(self.device)
 
@@ -116,9 +128,17 @@ class Diayn(object):
                 discriminator_output = self.discriminator(obs[:, idx])
                 true_skill = skills[:, idx]
                 if self.skill_type == gym.spaces.Discrete:
-                    intrinsic_rewards[:, idx] = np.log(torch.sum(true_skill * discriminator_output, axis=1).cpu().numpy())[:, np.newaxis] - np.log(1 / self.skill_shape)
+                    intrinsic_rewards[:, idx] = np.log(
+                        torch.sum(true_skill * discriminator_output, axis=1)
+                        .cpu()
+                        .numpy()
+                    )[:, np.newaxis] - np.log(1 / self.skill_shape)
                 elif self.skill_type == gym.spaces.Box:
-                    intrinsic_rewards[:, idx] = -F.mse_loss(discriminator_output, true_skill, reduction="mean").cpu().numpy()
+                    intrinsic_rewards[:, idx] = (
+                        -F.mse_loss(discriminator_output, true_skill, reduction="mean")
+                        .cpu()
+                        .numpy()
+                    )
 
         self.update(rollouts)
 

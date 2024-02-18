@@ -54,7 +54,7 @@ def main(args):
         gpu_idx=args.gpu_idx,
         print_novelty_box=args.print_novelty_box,
         save_model=args.save_model,
-        full_config=vars(args)
+        full_config=vars(args),
     )
 
 

@@ -9,7 +9,6 @@ from stable_baselines3.common.policies import BasePolicy
 import stable_baselines3.common.policies as sb3_policies
 
 import rlexplore
-from rlexplore.ir_model import IR_PPO
 
 import novgrid.config as novgrid_config
 

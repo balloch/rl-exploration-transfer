@@ -89,7 +89,11 @@ def run_experiment(
         ).get(policy.lower(), policy)
 
     wrapper_classes = get_all_subclasses_from_modules(
-        rlexplore, minigrid.wrappers, gym.wrappers, super_cls=gym.Wrapper, lower_case_keys=True
+        rlexplore,
+        minigrid.wrappers,
+        gym.wrappers,
+        super_cls=gym.Wrapper,
+        lower_case_keys=True,
     )
     for i in range(len(wrappers)):
         wrappers[i] = (
