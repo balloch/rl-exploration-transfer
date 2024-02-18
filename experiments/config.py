@@ -119,6 +119,14 @@ def make_parser() -> argparse.ArgumentParser:
         default=WRAPPERS,
         help="The wrappers to use on the environment.",
     )
+    parser.add_argument(
+        "--wrappers-kwargs",
+        "-wk",
+        type=json_type,
+        nargs="+",
+        default=WRAPPERS_KWARGS,
+        help="The arguments for the wrappers to use on the environment.",
+    )
 
     parser.add_argument(
         "--wandb-project-name",

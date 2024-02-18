@@ -63,6 +63,11 @@ def run_experiment(
 ):
     config = dict(locals().copy())
 
+    wrapper_kwargs_lst = [
+        ({} if wrapper_kwargs is None else wrapper_kwargs)
+        for wrapper_kwargs in wrapper_kwargs_lst
+    ]
+
     if gpu_idx is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = gpu_idx
 

@@ -33,6 +33,7 @@ def main(args):
         novelty_step=args.novelty_step,
         n_envs=args.n_envs,
         wrappers=args.wrappers,
+        wrapper_kwargs_lst=args.wrappers_kwargs,
         model_cls=args.rl_alg,
         model_kwargs=dict(
             verbose=args.verbose,
