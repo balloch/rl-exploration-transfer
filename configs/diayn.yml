@@ -5,7 +5,7 @@ rl_alg_kwargs:
     device: torch_device
     lr: 0.001
     batch_size: 32
-    beta: 0.02
+    beta: 0.01
     kappa: 0
     skill_key: skill
     state_key: state
@@ -18,7 +18,7 @@ wrappers:
 wrappers_kwargs:
  - {}
  - {}
- - skill_size: 20
+ - skill_size: 5
    use_discrete_skills: True
    skill_key: skill
    state_key: state
