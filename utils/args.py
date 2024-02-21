@@ -61,6 +61,27 @@ def add_config_file_arg(parser: argparse.ArgumentParser) -> argparse.ArgumentPar
     return parser
 
 
+def remove_argument(parser: argparse.ArgumentParser, arg: str) -> None:
+    """Removes an argument from a parser
+
+    Args:
+        parser (argparse.ArgumentParser): The parser to remove the argument from.
+        arg (str): The name (long name not including leading dashes) of the argument to remove
+    """
+    for action in parser._actions:
+        opts = action.option_strings
+        if (opts and opts[0] == arg) or action.dest == arg:
+            parser._remove_action(action)
+            break
+
+    for action in parser._action_groups:
+        for group_action in action._group_actions:
+            opts = group_action.option_strings
+            if (opts and opts[0] == arg) or group_action.dest == arg:
+                action._group_actions.remove(group_action)
+                return
+
+
 def get_args(
     parser: argparse.ArgumentParser,
     configs_root: str = "",
@@ -109,7 +130,9 @@ def get_args(
     return args
 
 
-def print_markdown(parser: argparse.ArgumentParser, name: str, config_file=True, additional_info=None) -> None:    
+def print_markdown(
+    parser: argparse.ArgumentParser, name: str, config_file=True, additional_info=None
+) -> None:
     """Prints documentation for a given argument parser in the markdown format.
 
     Args:
