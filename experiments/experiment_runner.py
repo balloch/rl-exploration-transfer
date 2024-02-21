@@ -232,8 +232,24 @@ def run_experiment(
                 )
             )
 
+        def update_callback_kwargs(callback_kwargs):
+            return {
+                k: (
+                    v
+                    if type(v) != dict or "callback_cls" not in v
+                    else (
+                        callback_classes[v["callback_cls"].lower()]
+                        if type(v["callback_cls"]) == str
+                        else v["callback_cls"]
+                    )(update_callback_kwargs(v.get("callback_kwargs", {})))
+                )
+                for k, v in callback_kwargs.items()
+            }
+
         for callback_cls, callback_kwargs in zip(callbacks, callback_kwargs_lst):
-            callback_instances.append(callback_cls(callback_kwargs))
+            callback_instances.append(
+                callback_cls(**update_callback_kwargs(callback_kwargs=callback_kwargs)),
+            )
 
         model.learn(
             total_timesteps=total_time_steps,
