@@ -15,6 +15,7 @@ import rlexplore
 import novgrid.config as novgrid_config
 
 from utils.arg_types import str2bool, json_type, module_enum
+from utils.args import remove_argument
 
 
 novgrid_config.ENV_CONFIG_FILE = "simple_to_lava_to_simple_crossing"
@@ -60,6 +61,11 @@ GPU_IDX = None
 
 def make_parser() -> argparse.ArgumentParser:
     parser = novgrid_config.make_parser()
+
+    remove_argument(parser=parser, arg="render_display")
+    remove_argument(parser=parser, arg="step_delay")
+
+    print(parser._actions)
 
     parser.description = "An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training."
 

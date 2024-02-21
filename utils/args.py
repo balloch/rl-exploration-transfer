@@ -66,18 +66,18 @@ def remove_argument(parser: argparse.ArgumentParser, arg: str) -> None:
 
     Args:
         parser (argparse.ArgumentParser): The parser to remove the argument from.
-        arg (str): The name (long name not including leading dashes) of the argument to remove
+        arg (str): The name (long name including leading dashes) of the argument to remove
     """
     for action in parser._actions:
         opts = action.option_strings
-        if (opts and opts[0] == arg) or action.dest == arg:
+        if (opts and arg in opts) or action.dest == arg:
             parser._remove_action(action)
             break
 
     for action in parser._action_groups:
         for group_action in action._group_actions:
             opts = group_action.option_strings
-            if (opts and opts[0] == arg) or group_action.dest == arg:
+            if (opts and arg in opts) or group_action.dest == arg:
                 action._group_actions.remove(group_action)
                 return
 
