@@ -65,8 +65,6 @@ def make_parser() -> argparse.ArgumentParser:
     remove_argument(parser=parser, arg="render_display")
     remove_argument(parser=parser, arg="step_delay")
 
-    print(parser._actions)
-
     parser.description = "An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training."
 
     parser.add_argument(
