@@ -248,7 +248,11 @@ def run_experiment(
 
         for callback_cls, callback_kwargs in zip(callbacks, callback_kwargs_lst):
             callback_instances.append(
-                callback_cls(**update_callback_kwargs(callback_kwargs=callback_kwargs)),
+                callback_cls(
+                    **replace_all_env_based_params(
+                        update_callback_kwargs(callback_kwargs=callback_kwargs)
+                    )
+                ),
             )
 
         model.learn(
