@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-./scripts/run_experiment.sh ppo.yml base.yml --experiment-suffix _none $@
+./scripts/run_experiment.sh ppo.yml base.yml $@ --experiment-suffix _none
 ./scripts/run_experiment.sh re3.yml ir_ppo.yml base.yml $@
 ./scripts/run_experiment.sh rise.yml ir_ppo.yml base.yml $@
 ./scripts/run_experiment.sh ride.yml ir_ppo.yml base.yml $@
