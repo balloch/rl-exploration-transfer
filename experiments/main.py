@@ -34,6 +34,8 @@ def main(args):
         n_envs=args.n_envs,
         wrappers=args.wrappers,
         wrapper_kwargs_lst=args.wrappers_kwargs,
+        callbacks=args.callbacks,
+        callback_kwargs_lst=args.callbacks_kwargs,
         model_cls=args.rl_alg,
         model_kwargs=dict(
             verbose=args.verbose,
