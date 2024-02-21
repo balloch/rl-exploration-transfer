@@ -1,13 +1,9 @@
 import os
 import sys
-from typing import Any
 
 curren_dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
-
-import gymnasium as gym
-import minigrid
 
 from experiments.experiment_runner import run_experiment
 from experiments.config import make_parser
