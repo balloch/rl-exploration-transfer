@@ -15,8 +15,9 @@ import stable_baselines3 as sb3
 import inspect
 
 
-def create_on_policy_ir_class(policy_cls: Type[OnPolicyAlgorithm]):
-    class IRModel(policy_cls):
+def create_on_policy_ir_class(model_cls: Type[OnPolicyAlgorithm]):
+
+    class IRModel(model_cls):
         def __init__(
             self,
             *args,
@@ -65,13 +66,14 @@ def create_on_policy_ir_class(policy_cls: Type[OnPolicyAlgorithm]):
             else:
                 return False
 
-    IRModel.__name__ = f"IR_{policy_cls.__name__}"
+    IRModel.__name__ = f"IR_{model_cls.__name__}"
 
     return IRModel
 
 
-def create_off_policy_ir_class(policy_cls: Type[OffPolicyAlgorithm]):
-    class IRModel(policy_cls):
+def create_off_policy_ir_class(model_cls: Type[OffPolicyAlgorithm]):
+
+    class IRModel(model_cls):
         def __init__(
             self,
             *args,
@@ -135,7 +137,7 @@ def create_off_policy_ir_class(policy_cls: Type[OffPolicyAlgorithm]):
                 sample_with_ir, self.replay_buffer
             )
 
-    IRModel.__name__ = f"IR_{policy_cls.__name__}"
+    IRModel.__name__ = f"IR_{model_cls.__name__}"
 
     return IRModel
 
