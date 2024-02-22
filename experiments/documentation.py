@@ -17,17 +17,17 @@ def generate_readme():
     parser = make_parser()
     print_markdown(
         parser=parser,
-        name="Intrinsic Reward NovGrid Runner",
+        name="Main Experiment Runner",
         additional_info="\n".join(
             [
                 "## Run Command",
                 "From the root of this repo, use the following command to run an experiment:",
                 "```bash",
-                "python experiments/experiment_runner.py -c {name of config file(s)} {additional config here}",
+                "python experiments/main.py -c {name of config file(s)} {additional config here}",
                 "```",
                 "For example:",
                 "```bash",
-                "python experiments/experiment_runner.py -c defaults",
+                "python experiments/main.py -c ppo.yml base.yml",
                 "```",
                 "\n\n",
                 "## Run Scripts",
@@ -70,6 +70,50 @@ def generate_readme():
                 "```",
                 "This env config will have the agent start in the `MiniGrid-SimpleCrossing` environment, then transfer to `MiniGrid-LavaCrossing`, and then back.",
                 "Further, different environment specifications can be specified within this json, changing the size of environments or other settings.",
+            ]
+        ),
+    )
+
+    print("\n\n")
+
+    from experiments.sweep import make_parser
+
+    parser = make_parser()
+    print_markdown(
+        parser=parser,
+        name="Hyperparameter Sweep",
+        additional_info="\n".join(
+            [
+                "## Run Command",
+                "From the root of this repo, use the following command to run an experiment:",
+                "```bash",
+                "python experiments/sweep.py -c {name of sweep config file(s)} {additional config here}",
+                "```",
+                "For example:",
+                "```bash",
+                "python experiments/sweep.py -c sweeps/ppo.yml sweeps/base.yml ppo.yml",
+                "```",
+                "\n\n",
+                "## Run Scripts",
+                "From the root of this repo, these commands will also start sweeps.",
+                "\n",
+                "To run a single sweep:",
+                "```bash",
+                "./scripts/run_sweep.sh {name of sweep config file(s)} {additional config here}",
+                "```",
+                "To run all the preset sweeps using all the different exploration methods:",
+                "```bash",
+                "./scripts/run_all_sweeps.sh {additional config here}",
+                "```",
+                "To run a subset of the preset sweeps:",
+                "```bash",
+                "./scripts/run_subset_sweeps.sh {selector string} {additional config here}",
+                "```",
+                "Example usage of the subset script is as follows:",
+                "```bash",
+                "./scripts/run_subset_sweeps.sh girm,diayn,re3 debug.yml",
+                "```",
+                "\n\n",
             ]
         ),
     )

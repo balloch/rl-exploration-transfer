@@ -1,14 +1,13 @@
-[_HelpAction(option_strings=['-h', '--help'], dest='help', nargs=0, const=None, default='==SUPPRESS==', type=None, choices=None, help='show this help message and exit', metavar=None), _StoreAction(option_strings=['--env-configs-file', '-ec'], dest='env_configs_file', nargs=None, const=None, default='simple_to_lava_to_simple_crossing', type=<class 'str'>, choices=None, help='Use the path to a json file containing the env configs here.', metavar=None), _StoreAction(option_strings=['--total-time-steps', '-t'], dest='total_time_steps', nargs=None, const=None, default=10000000, type=<class 'int'>, choices=None, help='The total number of time steps to run.', metavar=None), _StoreAction(option_strings=['--novelty-step', '-n'], dest='novelty_step', nargs=None, const=None, default=3000000, type=<class 'int'>, choices=None, help='The total number of time steps to run in an environment before injecting the next novelty.', metavar=None), _StoreAction(option_strings=['--n-envs', '-e'], dest='n_envs', nargs=None, const=None, default=5, type=<class 'int'>, choices=None, help='The number of envs to use when running the vectorized env.', metavar=None)]
-# Intrinsic Reward NovGrid Runner
+# Main Experiment Runner
 An experiment runner script for intrinsic reward exploration algorithms running on environments with transfers embedding in the training.
 ## Run Command
 From the root of this repo, use the following command to run an experiment:
 ```bash
-python experiments/experiment_runner.py -c {name of config file(s)} {additional config here}
+python experiments/main.py -c {name of config file(s)} {additional config here}
 ```
 For example:
 ```bash
-python experiments/experiment_runner.py -c defaults
+python experiments/main.py -c ppo.yml base.yml
 ```
 
 
@@ -95,6 +94,78 @@ Further, different environment specifications can be specified within this json,
 |--verbose |-v             |verbose        |1                   |int            |The verbosity parameter for model.learn.                                                                                |
 |--device  |-d             |device         |cuda:0              |str            |The torch device string to use.                                                                                         |
 |--gpu-idx |-gi            |gpu_idx        |None                |str            |The gpu index to use.                                                                                                   |
+|-c        |--config-file  |config_file    |[]                  |str            |A config file specifying some new default arguments (that can be overridden by command line args). This can be a list of config files (json/yml/yaml) with whatever arguments are set in them in order of lowest to highest priority. Usage: --config-file test.json test2.json.|
+
+
+
+# Hyperparameter Sweep
+A hyperparameter tuning script that uses wandb sweeps to tune the specified hyperparameters against the convergence speed metric.
+## Run Command
+From the root of this repo, use the following command to run an experiment:
+```bash
+python experiments/sweep.py -c {name of sweep config file(s)} {additional config here}
+```
+For example:
+```bash
+python experiments/sweep.py -c sweeps/ppo.yml sweeps/base.yml ppo.yml
+```
+
+
+
+## Run Scripts
+From the root of this repo, these commands will also start sweeps.
+
+
+To run a single sweep:
+```bash
+./scripts/run_sweep.sh {name of sweep config file(s)} {additional config here}
+```
+To run all the preset sweeps using all the different exploration methods:
+```bash
+./scripts/run_all_sweeps.sh {additional config here}
+```
+To run a subset of the preset sweeps:
+```bash
+./scripts/run_subset_sweeps.sh {selector string} {additional config here}
+```
+Example usage of the subset script is as follows:
+```bash
+./scripts/run_subset_sweeps.sh girm,diayn,re3 debug.yml
+```
+
+
+
+
+
+## Arguments
+### Reference Table
+|Short     |Long           |Config File Key|Default             |Type           |Help                                                                                                                    |
+|----------|---------------|---------------|--------------------|---------------|------------------------------------------------------------------------------------------------------------------------
+|-h        |--help         |help           |==SUPPRESS==        |None           |show this help message and exit                                                                                         |
+|--env-configs-file|-ec            |env_configs_file|simple_to_lava_to_simple_crossing|str            |Use the path to a json file containing the env configs here.                                                            |
+|--total-time-steps|-t             |total_time_steps|10000000            |int            |The total number of time steps to run.                                                                                  |
+|--n-envs  |-e             |n_envs         |5                   |int            |The number of envs to use when running the vectorized env.                                                              |
+|--experiment-name|-en            |experiment_name|None                |str            |The name of the experiment.                                                                                             |
+|--experiment-prefix|-ep            |experiment_prefix|novgrid_            |str            |The prefix for the experiment name to use when the experiment name is not explicitly defined.                           |
+|--experiment-suffix|-es            |experiment_suffix|                    |str            |The suffix for the experiment name to use when the experiment name is not explicitly defined.                           |
+|--rl-alg  |-a             |rl_alg         |PPO                 |rlexplore.\*/stable_baselines3.\*/BaseAlgorithm.\*|The name of the stable baselines model to use. Examples include PPO, DQN, etc.                                          |
+|--rl-alg-kwargs|-ak            |rl_alg_kwargs  |{'learning_rate': '$learning_rate'}|json           |The kwargs to pass to the RL algorithm. These include the intrinsic reward class name and kwargs if using an IR model.  |
+|--policy  |-p             |policy         |MlpPolicy           |rlexplore.\*/stable_baselines3.common.policies.\*|The type of policy to use. Examples include MlpPolicy, CnnPolicy, etc.                                                  |
+|--policy-kwargs|-pk            |policy_kwargs  |{}                  |json           |The kwargs to pass to the policy.                                                                                       |
+|--wrappers|-w             |wrappers       |[<class 'minigrid.wrappers.ImgObsWrapper'>, <class 'gymnasium.wrappers.flatten_observation.FlattenObservation'>]|rlexplore.\*/minigrid.wrappers.\*/gymnasium.wrappers.\*|The wrappers to use on the environment.                                                                                 |
+|--wrappers-kwargs|-wk            |wrappers_kwargs|[]                  |json           |The arguments for the wrappers to use on the environment.                                                               |
+|--wandb-project-name|-wpn           |wandb_project_name|rl-transfer-explore-sweeps|str            |The project name to save under in wandb.                                                                                |
+|--n-runs  |-r             |n_runs         |10                  |int            |The number of runs to do.                                                                                               |
+|--log-interval|-li            |log_interval   |1                   |int            |The log interval for model.learn.                                                                                       |
+|--print-novelty-box|-pnb           |print_novelty_box|True                |bool           |Whether or not to print the novelty box when novelty occurs.                                                            |
+|--verbose |-v             |verbose        |1                   |int            |The verbosity parameter for model.learn.                                                                                |
+|--device  |-d             |device         |cuda:0              |str            |The torch device string to use.                                                                                         |
+|--gpu-idx |-gi            |gpu_idx        |None                |str            |The gpu index to use.                                                                                                   |
+|--sweep-env-configs|-secf          |sweep_env_configs|[]                  |json           |Use the path to a json file containing the env configs here.                                                            |
+|--sweep-configuration|-sc            |sweep_configuration|{}                  |json           |The sweep configuration to use in wandb.                                                                                |
+|--eval-freq|-ef            |eval_freq      |10000               |int            |The frequency to evaluate the agent.                                                                                    |
+|--eval-episodes|-ee            |eval_episodes  |10                  |int            |The number of eval episodes to use.                                                                                     |
+|--min-reward-threshold|-mrt           |min_reward_threshold|0.75                |float          |The min reward threshold to stop training in the eval callback.                                                         |
 |-c        |--config-file  |config_file    |[]                  |str            |A config file specifying some new default arguments (that can be overridden by command line args). This can be a list of config files (json/yml/yaml) with whatever arguments are set in them in order of lowest to highest priority. Usage: --config-file test.json test2.json.|
 
 
