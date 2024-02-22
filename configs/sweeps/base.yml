@@ -1,0 +1,16 @@
+experiment_name: novgrid
+sweep_env_configs:
+ - env_id: NovGrid-ColoredDoorKeyEnv
+   door_color: red
+   correct_key_color: red
+   key_colors: 
+   - red
+ - env_id: "MiniGrid-SimpleCrossingS9N0-v0"
+   num_crossings: 2
+eval_freq: 10000
+eval_episodes: 10
+min_reward_threshold: 0.35
+total_time_steps: 3000000
+n_runs: 3
+n_envs: 5
+verbose: 1

@@ -1,0 +1,10 @@
+rl_alg: PPO
+rl_alg_kwargs:
+  learning_rate: $learning_rate
+sweep_configuration:
+  method: bayes
+  parameters:
+    learning_rate:
+      min: 0.00005
+      max: 0.001
+sweep_count: 10
