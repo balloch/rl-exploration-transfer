@@ -99,11 +99,6 @@ def make_parser():
 
 def main(args):
 
-    print(args.rl_alg_kwargs)
-    import sys
-
-    sys.exit(1)
-
     wrappers = args.wrappers
     wrapper_kwargs_lst = args.wrappers_kwargs
 
