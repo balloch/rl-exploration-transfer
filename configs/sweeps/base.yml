@@ -5,9 +5,9 @@ sweep_env_configs:
    correct_key_color: red
    key_colors: 
    - red
- - env_id: "MiniGrid-SimpleCrossingS9N0-v0"
+ - env_id: "MiniGrid-SimpleCrossingS9N3-v0"
    num_crossings: 2
-eval_freq: 50000
+eval_freq: 10000
 eval_episodes: 10
 min_reward_threshold: 0.35
 total_time_steps: 3000000
