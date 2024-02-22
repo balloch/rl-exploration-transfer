@@ -23,7 +23,7 @@ import experiments.config as experiment_config
 
 from utils.args import get_args, remove_argument
 from utils.arg_types import json_type
-from utils import get_all_subclasses_from_modules
+from utils import get_all_subclasses_from_modules, default
 
 experiment_config.WANDB_PROJECT_NAME = "rl-transfer-explore-sweeps"
 experiment_config.RL_ALG_KWARGS = {"learning_rate": "$learning_rate"}
@@ -130,11 +130,13 @@ def main(args):
 
     timestamp = int(time.time())
 
-    experiment_name = (
-        f"{args.experiment_prefix}"
-        f"{args.experiment_name}_"
-        f"{(args.rl_alg if type(args.rl_alg) == str else args.rl_alg.__name__).lower()}"
-        f"{args.experiment_suffix}"
+    experiment_name = default(
+        args.experiment_name,
+        (
+            f"{args.experiment_prefix}"
+            f"{(args.rl_alg if type(args.rl_alg) == str else args.rl_alg.__name__).lower()}"
+            f"{args.experiment_suffix}"
+        ),
     )
 
     def sweep_single_run():
