@@ -146,6 +146,17 @@ def run_experiment(
         model_name = f"{experiment_name}_{timestamp}_{run_num}_{n_runs}"
         model_file_path = f"models/{model_name}"
 
+        env = NoveltyEnv(
+            env_configs=env_configs,
+            novelty_step=novelty_step,
+            n_envs=n_envs,
+            wrappers=wrappers,
+            wrapper_kwargs_lst=wrapper_kwargs_lst,
+            print_novelty_box=print_novelty_box,
+        )
+
+        config["n_tasks"] = env.n_tasks
+
         if log and use_wandb:
             os.makedirs(model_file_path, exist_ok=True)
             wandb_run = wandb.init(
@@ -159,14 +170,6 @@ def run_experiment(
                 tags=[str(timestamp), experiment_name],
             )
 
-        env = NoveltyEnv(
-            env_configs=env_configs,
-            novelty_step=novelty_step,
-            n_envs=n_envs,
-            wrappers=wrappers,
-            wrapper_kwargs_lst=wrapper_kwargs_lst,
-            print_novelty_box=print_novelty_box,
-        )
         if wandb_save_videos and use_wandb:  # TODO: This is still not working!
             env = VecVideoRecorder(
                 env,
