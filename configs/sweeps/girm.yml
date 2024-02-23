@@ -9,17 +9,23 @@ sweep_configuration:
   method: bayes
   parameters:
     beta:
+      distribution: q_log_uniform
+      q: 0.00001
       min: 0.00001
       max: 0.1
     learning_rate:
+      distribution: q_log_uniform
+      q: 0.0001
       min: 0.0001
       max: 0.01
     batch_size:
+      distribution: categorical
       values:
        - 16
        - 32
        - 64
     latent_dim:
+      distribution: categorical
       values:
        - 16
        - 32
@@ -27,6 +33,8 @@ sweep_configuration:
        - 128
        - 256
     lambd:
+      distribution: q_log_uniform
+      q: 0.001
       min: 0.001
       max: 0.1
 sweep_count: 30

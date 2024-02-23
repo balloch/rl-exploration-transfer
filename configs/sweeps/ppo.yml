@@ -4,6 +4,8 @@ sweep_configuration:
   method: bayes
   parameters:
     learning_rate:
+      distribution: q_uniform
+      q: 0.00001
       min: 0.0003
       max: 0.0008
 sweep_count: 20

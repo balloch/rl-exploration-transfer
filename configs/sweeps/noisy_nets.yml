@@ -3,7 +3,8 @@ policy_kwargs:
 sweep_configuration:
   method: grid
   parameters:
-    beta:
+    num_noisy_layers:
+      distribution: categorical
       values:
        - 1
        - 2

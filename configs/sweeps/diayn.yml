@@ -14,28 +14,28 @@ sweep_configuration:
   method: bayes
   parameters:
     beta:
+      distribution: q_log_uniform
+      q: 0.00001
       min: 0.00001
       max: 0.1
     learning_rate:
+      distribution: q_log_uniform
+      q: 0.0001
       min: 0.0001
       max: 0.01
     batch_size:
+      distribution: categorical
       values:
        - 16
        - 32
        - 64
     use_discrete_skills:
+      distribution: categorical
       values:
        - True
        - False
     skill_size:
-      values:
-       - 1
-       - 3
-       - 5
-       - 7
-       - 10
-       - 12
-       - 15
-       - 20
-sweep_count: 40
+      distribution: int_uniform
+      min: 3
+      max: 20
+sweep_count: 30
