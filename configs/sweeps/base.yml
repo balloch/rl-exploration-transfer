@@ -1,4 +1,3 @@
-experiment_name: novgrid
 sweep_env_configs:
  - env_id: NovGrid-ColoredDoorKeyEnv
    door_color: red
