@@ -161,9 +161,9 @@ def main(args):
 
         rl_alg_kwargs = replace_kwargs_with_config(args.rl_alg_kwargs)
         policy_kwargs = replace_kwargs_with_config(args.policy_kwargs)
-        wrappers_kwargs = [
+        config_updated_wrapper_kwargs_lst = [
             replace_kwargs_with_config(wrapper_kwargs)
-            for wrapper_kwargs in args.wrappers_kwargs
+            for wrapper_kwargs in wrapper_kwargs_lst
         ]
 
         final_timesteps = []
@@ -185,7 +185,7 @@ def main(args):
                 env_configs=[env_config],
                 novelty_step=1e10,
                 wrappers=wrappers,
-                wrapper_kwargs_lst=wrapper_kwargs_lst,
+                wrapper_kwargs_lst=config_updated_wrapper_kwargs_lst,
                 n_envs=1,
             )
 
@@ -205,7 +205,7 @@ def main(args):
                 novelty_step=1e10,
                 n_envs=args.n_envs,
                 wrappers=args.wrappers,
-                wrapper_kwargs_lst=wrappers_kwargs,
+                wrapper_kwargs_lst=config_updated_wrapper_kwargs_lst,
                 callbacks=[EvalCallback, MetricsCallback],
                 callback_kwargs_lst=[eval_callback_kwargs, {"verbose": args.verbose}],
                 model_cls=args.rl_alg,
