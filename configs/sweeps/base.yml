@@ -11,5 +11,5 @@ eval_episodes: 10
 min_reward_threshold: 0.5
 total_time_steps: 3500000
 n_runs: 5
-n_envs: 5
+n_envs: 10
 verbose: 1
