@@ -1,4 +1,5 @@
 rl_alg_kwargs:
+  ir_alg_kwargs: 
     latent_dim: $latent_dim
     beta: $beta
 sweep_configuration:

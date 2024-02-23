@@ -1,4 +1,5 @@
 rl_alg_kwargs:
+  ir_alg_kwargs: 
     lr: $learning_rate
     batch_size: $batch_size
     beta: $beta
