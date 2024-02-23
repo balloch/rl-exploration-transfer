@@ -53,6 +53,10 @@ def make_error_bar_arg(error_bar_type: str, error_bar_arg: float):
 def make_parser():
     parser = argparse.ArgumentParser()
 
+    parser.description = (
+        "A python script to pull the reward data from wandb and plot it using seaborn."
+    )
+
     parser.add_argument(
         "--wandb-project-name",
         "-wpn",

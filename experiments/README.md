@@ -170,3 +170,55 @@ Example usage of the subset script is as follows:
 
 
 
+# Tag Wandb Runs
+A python script to tag all the wandb runs with tags that allow for easier filtering.
+## Run Command
+From the root of this repo, use the following command to tag all wandb runs:
+```bash
+python experiments/tag_wandb_runs.py {argparse config here}
+
+
+
+
+
+## Arguments
+### Reference Table
+|Short     |Long           |Config File Key|Default             |Type           |Help                                                                                                                    |
+|----------|---------------|---------------|--------------------|---------------|------------------------------------------------------------------------------------------------------------------------
+|-h        |--help         |help           |==SUPPRESS==        |None           |show this help message and exit                                                                                         |
+|--wandb-project-name|-wpn           |wandb_project_name|rl-transfer-explore |str            |The project name to load from in wandb.                                                                                 |
+|--convergence-reward-threshold|-crt           |convergence_reward_threshold|0.8                 |float          |The convergence threshold on the reward.                                                                                |
+|--convergence-check-step-ratio|-ccsr          |convergence_check_step_ratio|0.9                 |float          |The convergence step ratio to check on each environment. If the ratio is 0.9 and the environment was trained on for 10 steps, the code will check at step 9.|
+|-c        |--config-file  |config_file    |[]                  |str            |A config file specifying some new default arguments (that can be overridden by command line args). This can be a list of config files (json/yml/yaml) with whatever arguments are set in them in order of lowest to highest priority. Usage: --config-file test.json test2.json.|
+
+
+
+# Plot Data
+A python script to pull the reward data from wandb and plot it using seaborn.
+## Run Command
+From the root of this repo, use the following command to plot the reward data:
+```bash
+python experiments/plot_data.py {argparse config here}
+
+
+
+
+
+## Arguments
+### Reference Table
+|Short     |Long           |Config File Key|Default             |Type           |Help                                                                                                                    |
+|----------|---------------|---------------|--------------------|---------------|------------------------------------------------------------------------------------------------------------------------
+|-h        |--help         |help           |==SUPPRESS==        |None           |show this help message and exit                                                                                         |
+|--wandb-project-name|-wpn           |wandb_project_name|rl-transfer-explore |str            |The project name to load from in wandb.                                                                                 |
+|--env-configs-file|-ec            |env_configs_file|door_key_change     |str            |The env configs file name used in the experiments to plot.                                                              |
+|--n-tasks |-n             |n_tasks        |2                   |int            |The number of tasks run in these experiments. Should correspond with env configs file.                                  |
+|--filter-unconverged-out|-fuo           |filter_unconverged_out|True                |bool           |Whether or not to filter our the unconverged runs                                                                       |
+|--img-name|-i             |img_name       |converged_ep_rew_mean.png|str            |The name of the image to save the plot to in the figures folder.                                                        |
+|--estimator|-e             |estimator      |mean                |estimator_type |The estimator to use (in seaborns lineplot function) to aggregate data.                                                 |
+|--error-bar-type|-ebt           |error_bar_type |ci                  |str            |The type of error bar (in seaborns lineplot function) to use.                                                           |
+|--error-bar-arg|-eba           |error_bar_arg  |95                  |float          |The type of error bar argument (in seaborns lineplot function) to use.                                                  |
+|--step-range|-sr            |step_range     |(0, 0)              |int_tuple      |The range of steps to include in the data.                                                                              |
+|-c        |--config-file  |config_file    |[]                  |str            |A config file specifying some new default arguments (that can be overridden by command line args). This can be a list of config files (json/yml/yaml) with whatever arguments are set in them in order of lowest to highest priority. Usage: --config-file test.json test2.json.|
+
+
+

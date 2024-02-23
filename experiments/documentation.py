@@ -120,6 +120,44 @@ def generate_readme():
 
     print("\n\n")
 
+    from experiments.tag_wandb_runs import make_parser
+
+    parser = make_parser()
+    print_markdown(
+        parser=parser,
+        name="Tag Wandb Runs",
+        additional_info="\n".join(
+            [
+                "## Run Command",
+                "From the root of this repo, use the following command to tag all wandb runs:",
+                "```bash",
+                "python experiments/tag_wandb_runs.py {argparse config here}",
+                "\n\n",
+            ]
+        ),
+    )
+
+    print("\n\n")
+
+    from experiments.plot_data import make_parser
+
+    parser = make_parser()
+    print_markdown(
+        parser=parser,
+        name="Plot Data",
+        additional_info="\n".join(
+            [
+                "## Run Command",
+                "From the root of this repo, use the following command to plot the reward data:",
+                "```bash",
+                "python experiments/plot_data.py {argparse config here}",
+                "\n\n",
+            ]
+        ),
+    )
+
+    print("\n\n")
+
 
 if __name__ == "__main__":
     generate_readme()

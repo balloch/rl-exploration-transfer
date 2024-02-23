@@ -21,6 +21,8 @@ CONVERGENCE_CHECK_STEP_RATIO = 0.9
 def make_parser():
     parser = argparse.ArgumentParser()
 
+    parser.description = "A python script to tag all the wandb runs with tags that allow for easier filtering."
+
     parser.add_argument(
         "--wandb-project-name",
         "-wpn",
