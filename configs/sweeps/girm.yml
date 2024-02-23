@@ -3,7 +3,7 @@ rl_alg_kwargs:
     latent_dim: $latent_dim
     lr: $learning_rate
     batch_size: $batch_size
-    lambd: $lamd
+    lambd: $lambd
     beta: $beta
 sweep_configuration:
   method: bayes
