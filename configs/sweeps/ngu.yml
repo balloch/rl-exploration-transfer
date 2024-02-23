@@ -3,18 +3,17 @@ rl_alg_kwargs:
     latent_dim: $latent_dim
     lr: $learning_rate
     batch_size: $batch_size
-    lambd: $lamd
     beta: $beta
 sweep_configuration:
   method: bayes
   parameters:
     beta:
-      distribution: q_log_uniform
+      distribution: q_log_uniform_values
       q: 0.0001
       min: 0.0001
       max: 0.5
     learning_rate:
-      distribution: q_log_uniform
+      distribution: q_log_uniform_values
       q: 0.0001
       min: 0.0001
       max: 0.01
