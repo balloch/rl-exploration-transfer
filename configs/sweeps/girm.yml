@@ -1,0 +1,31 @@
+rl_alg_kwargs:
+    latent_dim: $latent_dim
+    lr: $learning_rate
+    batch_size: $batch_size
+    lambd: $lamd
+    beta: $beta
+sweep_configuration:
+  method: bayes
+  parameters:
+    beta:
+      min: 0.00001
+      max: 0.1
+    learning_rate:
+      min: 0.0001
+      max: 0.01
+    batch_size:
+      values:
+       - 16
+       - 32
+       - 64
+    latent_dim:
+      values:
+       - 16
+       - 32
+       - 64
+       - 128
+       - 256
+    lambd:
+      min: 0.001
+      max: 0.1
+sweep_count: 30

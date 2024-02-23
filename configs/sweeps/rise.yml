@@ -1,0 +1,17 @@
+rl_alg_kwargs:
+    latent_dim: $latent_dim
+    beta: $beta
+sweep_configuration:
+  method: bayes
+  parameters:
+    beta:
+      min: 0.00001
+      max: 0.1
+    latent_dim:
+      values:
+       - 16
+       - 32
+       - 64
+       - 128
+       - 256
+sweep_count: 30

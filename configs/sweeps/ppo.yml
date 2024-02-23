@@ -1,4 +1,3 @@
-rl_alg: PPO
 rl_alg_kwargs:
   learning_rate: $learning_rate
 sweep_configuration:

@@ -1,0 +1,10 @@
+policy_kwargs:
+  num_noisy_layers: $num_noisy_layers
+sweep_configuration:
+  method: bayes
+  parameters:
+    beta:
+      values:
+       - 1
+       - 2
+sweep_count: 2
