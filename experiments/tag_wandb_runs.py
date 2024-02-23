@@ -83,5 +83,5 @@ def main(args):
 
 if __name__ == "__main__":
     parser = make_parser()
-    args = get_args(parser)
+    args = get_args(parser, configs_root="./configs")
     main(args)
