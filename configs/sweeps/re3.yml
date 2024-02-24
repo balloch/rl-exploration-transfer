@@ -18,4 +18,4 @@ sweep_configuration:
        - 64
        - 128
        - 256
-sweep_count: 15
+sweep_count: 10

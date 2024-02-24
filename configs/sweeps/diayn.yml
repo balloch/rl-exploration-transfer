@@ -38,4 +38,4 @@ sweep_configuration:
       distribution: int_uniform
       min: 3
       max: 20
-sweep_count: 30
+sweep_count: 20

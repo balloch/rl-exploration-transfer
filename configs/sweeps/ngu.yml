@@ -31,4 +31,4 @@ sweep_configuration:
        - 64
        - 128
        - 256
-sweep_count: 30
+sweep_count: 20

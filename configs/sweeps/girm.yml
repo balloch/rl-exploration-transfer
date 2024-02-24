@@ -37,4 +37,4 @@ sweep_configuration:
       q: 0.001
       min: 0.001
       max: 0.1
-sweep_count: 30
+sweep_count: 20

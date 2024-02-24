@@ -8,8 +8,8 @@ sweep_env_configs:
    num_crossings: 2
 eval_freq: 2000
 eval_episodes: 10
-min_reward_threshold: 0.5
-total_time_steps: 3500000
-n_runs: 5
+min_reward_threshold: 0.35
+total_time_steps: 3000000
+n_runs: 3
 n_envs: 10
 verbose: 1
