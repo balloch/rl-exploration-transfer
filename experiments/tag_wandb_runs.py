@@ -6,13 +6,12 @@ parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
 import argparse
-import wandb
-import tqdm
 import pandas as pd
 
 
 from config import WANDB_PROJECT_NAME
 from utils.args import get_args
+from experiments.wandb_run_data import edit_runs
 
 CONVERGENCE_REWARD_THRESHOLD = 0.8
 CONVERGENCE_CHECK_STEP_RATIO = 0.9
@@ -50,11 +49,7 @@ def make_parser():
 
 def main(args):
 
-    api = wandb.Api()
-
-    wandb_runs = api.runs(args.wandb_project_name, include_sweeps=False)
-
-    for wandb_run in tqdm.tqdm(wandb_runs):
+    def add_convergence_tags(wandb_run):
         df = pd.DataFrame(
             wandb_run.scan_history(keys=["global_step", "rollout/ep_rew_mean"])
         )
@@ -81,6 +76,8 @@ def main(args):
             if df[idx] > args.convergence_reward_threshold:
                 wandb_run.tags.append(convergence_tag)
             wandb_run.update()
+
+    edit_runs(project_name=args.wandb_project_name, update_run=add_convergence_tags)
 
 
 if __name__ == "__main__":
