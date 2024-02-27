@@ -18,6 +18,8 @@ import pandas as pd
 ENV_CONFIGS_FILE = "door_key_change"
 N_TASKS = 2
 FILTER_UNCONVERGED_OUT = True
+PULL_FROM_WANDB = True
+DATA_FILE = "wandb_runs.pkl"
 
 
 api = None
@@ -77,10 +79,21 @@ def make_data_loader_parser():
         help="Whether or not to filter our the unconverged runs",
     )
 
+    parser.add_argument(
+        "--pull-from-wandb",
+        "-pfw",
+        type=str2bool,
+        default=PULL_FROM_WANDB,
+    )
+    parser.add_argument("--data-file", "-df", type=str, default=DATA_FILE)
+
     return parser
 
 
 def load_data(args: argparse.Namespace) -> pd.DataFrame:
+
+    if not args.pull_from_wandb and os.path.exists(args.data_file):
+        return pd.read_pickle(f"./data/{args.data_file}")
 
     api = get_api_instance()
 
@@ -142,5 +155,7 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
         full_df = full_df[full_df["global_step"].gt(args.step_range[0])]
     elif args.step_range[1] > 0:
         full_df = full_df[full_df["global_step"].lt(args.step_range[1])]
+
+    full_df.to_pickle(f"./data/{args.data_file}")
 
     return full_df
