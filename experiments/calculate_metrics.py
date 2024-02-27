@@ -46,7 +46,8 @@ def make_parser():
 def calculate_metrics(args: argparse.Namespace, df: pd.DataFrame):
     index_dict = get_index_dict(df=df)
 
-    metrics_df = pd.DataFrame()
+    metrics_idx = []
+    metrics = {}
 
     for experiment_name in index_dict:
         for run_id in index_dict[experiment_name]:
@@ -83,10 +84,16 @@ def calculate_metrics(args: argparse.Namespace, df: pd.DataFrame):
             ].index[0]
             steps_to_converge_per_task.index = range(len(steps_to_converge_per_task))
 
-            for i in steps_to_converge_per_task.index:
-                metrics_df.loc[f"converged_step_{i}", (experiment_name, run_id)] = (
+            metrics_idx.append((experiment_name, run_id))
+
+            for i in [0, 1]: # steps_to_converge_per_task.index:
+                if f"converged_step_{i}" not in metrics:
+                    metrics[f"converged_step_{i}"] = []
+                metrics[f"converged_step_{i}"].append(
                     steps_to_converge_per_task[i]
                 )
+
+        metrics_df = pd.DataFrame(metrics, index=pd.MultiIndex.from_tuples(metrics_idx))
 
         import pdb
 
