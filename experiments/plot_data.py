@@ -92,23 +92,23 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
         y="rollout/ep_rew_mean",
         hue="experiment_name",
         data=df,
-        errorbar=make_error_bar_arg(args.error_bar_type, 0),
+        errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
         estimator=args.estimator,
     )
     plot.figure.savefig(f"figures/{args.img_name}")
     plt.close()
 
-    for experiment_name_idx in set(df.index.get_level_values("experiment_name_idx")):
-        plot = sns.lineplot(
-            x="global_step",
-            y="rollout/ep_rew_mean",
-            hue="experiment_name",
-            data=df.loc[experiment_name_idx],
-            errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
-            estimator=args.estimator,
-        )
-        plot.figure.savefig(f"figures/{experiment_name_idx}_{args.img_name}")
-        plt.close()
+    # for experiment_name_idx in set(df.index.get_level_values("experiment_name_idx")):
+    #     plot = sns.lineplot(
+    #         x="global_step",
+    #         y="rollout/ep_rew_mean",
+    #         hue="experiment_name",
+    #         data=df.loc[experiment_name_idx],
+    #         errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
+    #         estimator=args.estimator,
+    #     )
+    #     plot.figure.savefig(f"figures/{experiment_name_idx}_{args.img_name}")
+    #     plt.close()
 
 
 def main(args):
