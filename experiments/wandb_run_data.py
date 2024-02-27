@@ -7,7 +7,7 @@ parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
 from experiments.config import WANDB_PROJECT_NAME
-from utils.arg_types import str2bool
+from utils.arg_types import str2bool, tup
 
 import argparse
 import wandb
@@ -18,6 +18,8 @@ import pandas as pd
 ENV_CONFIGS_FILE = "door_key_change"
 N_TASKS = 2
 FILTER_UNCONVERGED_OUT = True
+STEP_RANGE = (0, 0)
+
 PULL_FROM_WANDB = True
 DATA_FILE = "wandb_runs.pkl"
 
@@ -80,6 +82,14 @@ def make_data_loader_parser():
     )
 
     parser.add_argument(
+        "--step-range",
+        "-sr",
+        type=tup(int),
+        default=STEP_RANGE,
+        help="The range of steps to include in the data.",
+    )
+
+    parser.add_argument(
         "--pull-from-wandb",
         "-pfw",
         type=str2bool,
@@ -92,7 +102,7 @@ def make_data_loader_parser():
 
 def load_data(args: argparse.Namespace) -> pd.DataFrame:
 
-    if not args.pull_from_wandb and os.path.exists(args.data_file):
+    if not args.pull_from_wandb and os.path.exists(f"./data/{args.data_file}"):
         return pd.read_pickle(f"./data/{args.data_file}")
 
     api = get_api_instance()

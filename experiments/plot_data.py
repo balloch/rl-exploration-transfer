@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 sns.set_theme(style="darkgrid", rc={"figure.figsize": (30, 15)})
 
 
-from utils.arg_types import tup
 from utils.args import get_args
 from experiments.wandb_run_data import make_data_loader_parser, load_data
 
@@ -22,7 +21,6 @@ IMG_NAME = "converged_ep_rew_mean.png"
 ESTIMATOR = "mean"
 ERROR_BAR_TYPE = "ci"
 ERROR_BAR_ARG = 95
-STEP_RANGE = (0, 0)
 
 
 def estimator_type(s: str):
@@ -83,14 +81,6 @@ def make_parser():
         type=float,
         default=ERROR_BAR_ARG,
         help="The type of error bar argument (in seaborns lineplot function) to use.",
-    )
-
-    parser.add_argument(
-        "--step-range",
-        "-sr",
-        type=tup(int),
-        default=STEP_RANGE,
-        help="The range of steps to include in the data.",
     )
 
     return parser
