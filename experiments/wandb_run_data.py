@@ -120,6 +120,14 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
                 for n in range(args.n_tasks)
                 if args.filter_unconverged_out
             ]
+            + [
+                {
+                    "$or": [
+                        {"config.archived": {"$exists": False}},
+                        {"config.archived": False},
+                    ]
+                }
+            ],
         },
         include_sweeps=False,
     )
