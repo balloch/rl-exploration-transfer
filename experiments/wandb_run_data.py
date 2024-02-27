@@ -102,8 +102,10 @@ def make_data_loader_parser():
 
 def load_data(args: argparse.Namespace) -> pd.DataFrame:
 
-    if not args.pull_from_wandb and os.path.exists(f"./data/{args.data_file}"):
-        return pd.read_pickle(f"./data/{args.data_file}")
+    data_file_path = f"./data/{args.data_file}"
+
+    if not args.pull_from_wandb and os.path.exists(data_file_path):
+        return pd.read_pickle(data_file_path)
 
     api = get_api_instance()
 
@@ -166,6 +168,7 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
     elif args.step_range[1] > 0:
         full_df = full_df[full_df["global_step"].lt(args.step_range[1])]
 
-    full_df.to_pickle(f"./data/{args.data_file}")
+    os.makedirs("./data", exist_ok=True)
+    full_df.to_pickle(data_file_path)
 
     return full_df
