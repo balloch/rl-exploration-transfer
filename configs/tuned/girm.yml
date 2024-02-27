@@ -1,0 +1,11 @@
+rl_alg_kwargs:
+  ir_alg_cls: girm
+  ir_alg_kwargs:
+    envs: envs
+    latent_dim: 128
+    lr: 0.001
+    batch_size: 32
+    lambd: 0.1
+    beta: 0.01
+    kappa: 0
+experiment_suffix: _girm

@@ -2,7 +2,7 @@ rl_alg_kwargs:
   ir_alg_kwargs: 
     latent_dim: $latent_dim
     lr: $learning_rate
-    batch_size: $batch_size
+    batch_size: 64
     lambd: $lambd
     beta: $beta
 sweep_configuration:
@@ -18,23 +18,15 @@ sweep_configuration:
       q: 0.0001
       min: 0.0001
       max: 0.01
-    batch_size:
-      distribution: categorical
-      values:
-       - 16
-       - 32
-       - 64
     latent_dim:
       distribution: categorical
       values:
-       - 16
        - 32
        - 64
        - 128
-       - 256
     lambd:
       distribution: q_log_uniform_values
       q: 0.001
       min: 0.001
       max: 0.1
-sweep_count: 20
+sweep_count: 15
