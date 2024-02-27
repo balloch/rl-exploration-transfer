@@ -180,3 +180,20 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
     full_df.to_pickle(data_file_path)
 
     return full_df
+
+def get_index_dict(df: pd.DataFrame):
+    experiment_name_idx = df.index.get_level_values("experiment_name_idx")
+    run_id_idx = df.index.get_level_values("run_id_idx")
+    row_idx = df.index.get_level_values("row_idx")
+
+    indices = {}
+
+    for experiment_name, run_id, row_num in zip(experiment_name_idx, run_id_idx, row_idx):
+        if experiment_name not in indices:
+            indices[experiment_name] = {}
+        if run_id not in indices[experiment_name]:
+            indices[experiment_name][run_id] = []
+        indices[experiment_name][run_id].append(row_num)
+
+    return indices        
+
