@@ -147,6 +147,9 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
         df["run_id"] = run_id
         df["experiment_name"] = experiment_name
 
+        for i in range(args.n_tasks):
+            df[f"converged_{i}"] = f"converged_{i}" in wandb_run.tags
+
         if experiment_name not in mapping_by_experiment_name:
             mapping_by_experiment_name[experiment_name] = {}
 
@@ -175,6 +178,8 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
         full_df = full_df[full_df["global_step"].gt(args.step_range[0])]
     elif args.step_range[1] > 0:
         full_df = full_df[full_df["global_step"].lt(args.step_range[1])]
+    
+    full_df = full_df.sort_index()
 
     os.makedirs("./data", exist_ok=True)
     full_df.to_pickle(data_file_path)
@@ -196,4 +201,3 @@ def get_index_dict(df: pd.DataFrame):
         indices[experiment_name][run_id].append(row_num)
 
     return indices        
-
