@@ -6,10 +6,10 @@ parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
 import argparse
-import wandb
 import tqdm
 import pandas as pd
 import seaborn as sns
+import matplotlib.pyplot as plt
 
 sns.set_theme(style="darkgrid", rc={"figure.figsize": (30, 15)})
 
@@ -17,6 +17,7 @@ sns.set_theme(style="darkgrid", rc={"figure.figsize": (30, 15)})
 from utils.arg_types import str2bool, tup
 from utils.args import get_args
 from config import WANDB_PROJECT_NAME
+from experiments.wandb_run_data import get_api_instance
 
 ENV_CONFIGS_FILE = "door_key_change"
 N_TASKS = 2
@@ -131,7 +132,7 @@ def make_parser():
 
 def load_data(args: argparse.Namespace) -> pd.DataFrame:
 
-    api = wandb.Api()
+    api = get_api_instance()
 
     wandb_runs = api.runs(
         args.wandb_project_name,
@@ -201,10 +202,23 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
         y="rollout/ep_rew_mean",
         hue="experiment_name",
         data=df,
-        errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
+        errorbar=make_error_bar_arg(args.error_bar_type, 0),
         estimator=args.estimator,
     )
     plot.figure.savefig(f"figures/{args.img_name}")
+    plt.close()
+
+    for experiment_name_idx in set(df.index.get_level_values("experiment_name_idx")):
+        plot = sns.lineplot(
+            x="global_step",
+            y="rollout/ep_rew_mean",
+            hue="experiment_name",
+            data=df.loc[experiment_name_idx],
+            errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
+            estimator=args.estimator,
+        )
+        plot.figure.savefig(f"figures/{experiment_name_idx}_{args.img_name}")
+        plt.close()
 
 
 def main(args):
