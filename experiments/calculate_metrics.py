@@ -86,6 +86,18 @@ def aggregate_metrics(
     }
 
 
+def iq(arr: np.ndarray):
+    sorted_arr = np.sort(arr)
+    n = len(arr)
+    return sorted_arr[int(np.ceil(0.25 * n)) : int(np.floor(0.75 * n)) + 1]
+
+
+def bootstrapped_sampling(arr, k=6, m=5):
+    n = len(arr)
+    idx = np.array([np.random.choice(n, size=(k,), replace=False) for _ in range(m)])
+    return arr[idx]
+
+
 class Aggregators:
 
     @staticmethod
@@ -94,6 +106,47 @@ class Aggregators:
             k: (
                 metrics[k][metrics["converged"]].mean(),
                 metrics[k][metrics["converged"]].std(),
+            )
+            for k in metrics
+            if k != "converged"
+        }
+
+    @staticmethod
+    def converged_iq_mean_std(metrics: Dict[str, np.ndarray]):
+        return {
+            k: (
+                iq(metrics[k][metrics["converged"]]).mean(),
+                iq(metrics[k][metrics["converged"]]).std(),
+            )
+            for k in metrics
+            if k != "converged"
+        }
+
+    @staticmethod
+    def bootstrapped_converged_mean_std(metrics: Dict[str, np.ndarray]):
+        return {
+            k: (
+                bootstrapped_sampling(metrics[k][metrics["converged"]])
+                .mean(axis=1)
+                .mean(),
+                bootstrapped_sampling(metrics[k][metrics["converged"]])
+                .std(axis=1)
+                .mean(),
+            )
+            for k in metrics
+            if k != "converged"
+        }
+
+    @staticmethod
+    def bootstrapped_converged_iq_mean_std(metrics: Dict[str, np.ndarray]):
+        return {
+            k: (
+                iq(bootstrapped_sampling(metrics[k][metrics["converged"]]))
+                .mean(axis=1)
+                .mean(),
+                iq(bootstrapped_sampling(metrics[k][metrics["converged"]]))
+                .std(axis=1)
+                .mean(),
             )
             for k in metrics
             if k != "converged"
@@ -110,19 +163,16 @@ class Aggregators:
             if k != "converged"
         }
 
-    # @staticmethod
-    # def converged_iq_mean_std(metrics: Dict[str, np.ndarray]):
-    #     import pdb
-
-    #     return {
-    #         k: (
-    #             pdb.set_trace(),
-    #             metrics[k][metrics["converged"]].mean(),
-    #             metrics[k][metrics["converged"]].std(),
-    #         )
-    #         for k in metrics
-    #         if k != "converged"
-    #     }
+    @staticmethod
+    def all_iq_mean_std(metrics: Dict[str, np.ndarray]):
+        return {
+            k: (
+                iq(metrics[k]).mean(),
+                iq(metrics[k]).std(),
+            )
+            for k in metrics
+            if k != "converged"
+        }
 
     """
     4 agg
@@ -147,14 +197,14 @@ class Metrics:
     @staticmethod
     def final_reward(rewards_df: pd.DataFrame):
         return rewards_df["rewards"].iloc[-1]
-    
+
     @staticmethod
     def transfer_area_under_curve(rewards_df: pd.DataFrame):
         return 0
-    
-    '''
+
+    """
     tr-auc (transfer area under the curve) = (sq) normalized area on second task under the curve + final task reward on first task
-    '''
+    """
 
 
 def main(args):
