@@ -6,7 +6,7 @@ rl_alg_kwargs:
     lr: 0.002
     batch_size: 64
     lambd: 0.05
-    beta: 0.01
+    beta: 0.0005
     kappa: 0
 experiment_prefix: novgrid_tuned_
 experiment_suffix: _girm
