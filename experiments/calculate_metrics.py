@@ -10,6 +10,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import pickle as pkl
+import json
 
 from utils.args import get_args
 import experiments.wandb_run_data as wrd
@@ -101,70 +102,70 @@ def bootstrapped_sampling(arr, k=6, m=5):
 class Aggregators:
 
     @staticmethod
-    def converged_mean_std(metrics: Dict[str, np.ndarray]):
+    def converged(metrics: Dict[str, np.ndarray]):
         return {
-            k: (
-                metrics[k][metrics["converged"]].mean(),
-                metrics[k][metrics["converged"]].std(),
-            )
+            k: {
+                "mean": metrics[k][metrics["converged"]].mean(),
+                "std": metrics[k][metrics["converged"]].std(),
+            }
             for k in metrics
             if k != "converged"
         }
 
     @staticmethod
-    def converged_iq_mean_std(metrics: Dict[str, np.ndarray]):
+    def converged_iq(metrics: Dict[str, np.ndarray]):
         return {
-            k: (
-                iq(metrics[k][metrics["converged"]]).mean(),
-                iq(metrics[k][metrics["converged"]]).std(),
-            )
+            k: {
+                "mean": iq(metrics[k][metrics["converged"]]).mean(),
+                "std": iq(metrics[k][metrics["converged"]]).std(),
+            }
             for k in metrics
             if k != "converged"
         }
 
     @staticmethod
-    def bootstrapped_converged_mean_std(metrics: Dict[str, np.ndarray]):
+    def bootstrapped_converged(metrics: Dict[str, np.ndarray]):
         return {
-            k: (
-                bootstrapped_sampling(metrics[k][metrics["converged"]])
+            k: {
+                "mean": bootstrapped_sampling(metrics[k][metrics["converged"]])
                 .mean(axis=1)
                 .mean(),
-                bootstrapped_sampling(metrics[k][metrics["converged"]])
+                "std": bootstrapped_sampling(metrics[k][metrics["converged"]])
                 .std(axis=1)
                 .mean(),
-            )
+            }
             for k in metrics
             if k != "converged"
         }
 
     @staticmethod
-    def bootstrapped_converged_iq_mean_std(metrics: Dict[str, np.ndarray]):
+    def bootstrapped_converged_iq(metrics: Dict[str, np.ndarray]):
         return {
-            k: (
-                iq(bootstrapped_sampling(metrics[k][metrics["converged"]]))
+            k: {
+                "mean": iq(bootstrapped_sampling(metrics[k][metrics["converged"]]))
                 .mean(axis=1)
                 .mean(),
-                iq(bootstrapped_sampling(metrics[k][metrics["converged"]]))
+                "std": iq(bootstrapped_sampling(metrics[k][metrics["converged"]]))
                 .std(axis=1)
                 .mean(),
-            )
+            }
             for k in metrics
             if k != "converged"
         }
 
     @staticmethod
-    def all_mean_std(metrics: Dict[str, np.ndarray]):
+    def all(metrics: Dict[str, np.ndarray]):
         return {
-            k: (
-                metrics[k].mean(),
-                metrics[k].std(),
-            )
+            k: {
+                "mean": metrics[k].mean(),
+                "std": metrics[k].std(),
+            }
             for k in metrics
             if k != "converged"
         }
 
     @staticmethod
-    def all_iq_mean_std(metrics: Dict[str, np.ndarray]):
+    def all_iq(metrics: Dict[str, np.ndarray]):
         return {
             k: (
                 iq(metrics[k]).mean(),
@@ -236,8 +237,8 @@ def main(args):
 
     with open("./data/metrics.pkl", "wb") as f:
         pkl.dump(metrics, file=f)
-    with open("./data/results.pkl", "wb") as f:
-        pkl.dump(results, file=f)
+    with open("./data/results.json", "w") as f:
+        json.dump(results, fp=f, indent=4)
 
 
 if __name__ == "__main__":
