@@ -150,6 +150,9 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
         for i in range(args.n_tasks):
             df[f"converged_{i}"] = f"converged_{i}" in wandb_run.tags
 
+        df["novelty_step"] = wandb_run.config["novelty_step"]
+        df["n_tasks"] = wandb_run.config["n_tasks"]
+
         if experiment_name not in mapping_by_experiment_name:
             mapping_by_experiment_name[experiment_name] = {}
 
@@ -178,7 +181,7 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
         full_df = full_df[full_df["global_step"].gt(args.step_range[0])]
     elif args.step_range[1] > 0:
         full_df = full_df[full_df["global_step"].lt(args.step_range[1])]
-    
+
     full_df = full_df.sort_index()
 
     os.makedirs("./data", exist_ok=True)

@@ -174,20 +174,6 @@ class Aggregators:
             if k != "converged"
         }
 
-    """
-    4 agg
-    all converged mean, std
-    all converged iqm, iq_std
-
-    all mean, std
-    all iqm, iq_std
-
-    (if i have time)
-    bootstrapped all converged mean, std
-    bootstrapped all converged iqm, iq_std
-        
-    """
-
 
 class Metrics:
     @staticmethod
@@ -200,11 +186,28 @@ class Metrics:
 
     @staticmethod
     def transfer_area_under_curve(rewards_df: pd.DataFrame):
-        return 0
+        novelty_step = rewards_df["novelty_step"].iloc[0]
+        n_tasks = rewards_df["n_tasks"].iloc[0]
+        assert n_tasks == 2
+        task_one_rewards = rewards_df["rewards"][rewards_df.index <= novelty_step]
+        task_two_rewards = rewards_df["rewards"][rewards_df.index > novelty_step]
 
-    """
-    tr-auc (transfer area under the curve) = (sq) normalized area on second task under the curve + final task reward on first task
-    """
+        task_one_final_performance = task_one_rewards.iloc[-10:].mean()
+
+        # task_two_range = (
+        #     rewards_df.index[rewards_df.index > novelty_step].min()
+        #     - rewards_df.index[rewards_df.index > novelty_step].max()
+        # )
+
+        """
+        This is the normalized area under the curve since
+        area = (mean value) * (range)
+        full rectangle area = (reward cap) * (range) = (range)
+        normalized_area = (area) / (full rectangle area) = (area) / (range) = (mean value)
+        """
+        task_two_area_under_the_curve = task_two_rewards.mean()
+
+        return task_one_final_performance + task_two_area_under_the_curve
 
 
 def main(args):
@@ -226,9 +229,11 @@ def main(args):
             if isinstance(v, staticmethod)
         },
     )
+
     import pdb
 
     pdb.set_trace()
+
     with open("./data/metrics.pkl", "wb") as f:
         pkl.dump(metrics, file=f)
     with open("./data/results.pkl", "wb") as f:
