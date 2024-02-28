@@ -99,6 +99,31 @@ class Aggregators:
             if k != "converged"
         }
 
+    @staticmethod
+    def all_mean_std(metrics: Dict[str, np.ndarray]):
+        return {
+            k: (
+                metrics[k].mean(),
+                metrics[k].std(),
+            )
+            for k in metrics
+            if k != "converged"
+        }
+
+    # @staticmethod
+    # def converged_iq_mean_std(metrics: Dict[str, np.ndarray]):
+    #     import pdb
+
+    #     return {
+    #         k: (
+    #             pdb.set_trace(),
+    #             metrics[k][metrics["converged"]].mean(),
+    #             metrics[k][metrics["converged"]].std(),
+    #         )
+    #         for k in metrics
+    #         if k != "converged"
+    #     }
+
     """
     4 agg
     all converged mean, std
@@ -122,6 +147,10 @@ class Metrics:
     @staticmethod
     def final_reward(rewards_df: pd.DataFrame):
         return rewards_df["rewards"].iloc[-1]
+    
+    @staticmethod
+    def transfer_area_under_curve(rewards_df: pd.DataFrame):
+        return 0
     
     '''
     tr-auc (transfer area under the curve) = (sq) normalized area on second task under the curve + final task reward on first task
