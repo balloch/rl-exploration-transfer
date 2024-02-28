@@ -8,4 +8,5 @@ rl_alg_kwargs:
     batch_size: 64
     beta: 0.002
     kappa: 0
+experiment_prefix: novgrid_tuned_
 experiment_suffix: _rnd

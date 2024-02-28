@@ -10,6 +10,7 @@ rl_alg_kwargs:
     skill_key: skill
     state_key: state
 policy: MultiInputPolicy
+experiment_prefix: novgrid_tuned_
 experiment_suffix: _diayn
 wrappers:
  - ImgObsWrapper

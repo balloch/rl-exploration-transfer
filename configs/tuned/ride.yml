@@ -6,4 +6,5 @@ rl_alg_kwargs:
     latent_dim: 128
     beta: 0.001
     kappa: 0
+experiment_prefix: novgrid_tuned_
 experiment_suffix: _ride
