@@ -10,13 +10,15 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-sns.set_theme(style="darkgrid", rc={"figure.figsize": (30, 15)})
+sns.set_theme(style="whitegrid", rc={"figure.figsize": (30, 15)})
 
 
 from utils.args import get_args
+import experiments.wandb_run_data as wrd
 from experiments.wandb_run_data import make_data_loader_parser, load_data
 
 
+wrd.PULL_FROM_WANDB = False
 IMG_NAME = "converged_ep_rew_mean.png"
 ESTIMATOR = "mean"
 ERROR_BAR_TYPE = "ci"
