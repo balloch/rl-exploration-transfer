@@ -99,6 +99,20 @@ class Aggregators:
             if k != "converged"
         }
 
+    """
+    4 agg
+    all converged mean, std
+    all converged iqm, iq_std
+
+    all mean, std
+    all iqm, iq_std
+
+    (if i have time)
+    bootstrapped all converged mean, std
+    bootstrapped all converged iqm, iq_std
+        
+    """
+
 
 class Metrics:
     @staticmethod
@@ -108,6 +122,10 @@ class Metrics:
     @staticmethod
     def final_reward(rewards_df: pd.DataFrame):
         return rewards_df["rewards"].iloc[-1]
+    
+    '''
+    tr-auc (transfer area under the curve) = (sq) normalized area on second task under the curve + final task reward on first task
+    '''
 
 
 def main(args):
