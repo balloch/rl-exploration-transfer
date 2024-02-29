@@ -204,7 +204,7 @@ class Metrics:
     def k_shot_efficiency(rewards_df: pd.DataFrame, k: int = 100):
         novelty_step = rewards_df["novelty_step"].iloc[0]
         task_two_rewards = rewards_df["rewards"][rewards_df.index > novelty_step]
-        return task_two_rewards.rolling(window=5, center=True).iloc[k]
+        return task_two_rewards.rolling(window=5, center=True).mean().iloc[k]
 
     @staticmethod
     def percentile_efficiency(rewards_df: pd.DataFrame, percetile: int = 50):
@@ -249,11 +249,11 @@ def plot_results(results: Dict[str, Dict[str, Any]]):
     labels = list(results.keys())
     plots_to_generate = list(list(results.values())[0].keys())
     metric_names = list(list(list(results.values())[0].values())[0].keys())
-    import pdb
+    height = 0.6
 
     data = [
         [
-            [results[k][plot_name][metric]["arr"] for k in labels]
+            [results[k][plot_name][metric] for k in labels]
             for plot_name in plots_to_generate
         ]
         for metric in metric_names
@@ -265,7 +265,29 @@ def plot_results(results: Dict[str, Dict[str, Any]]):
             plot_name = plots_to_generate[j]
             plot_data = data[i][j]
             plt.figure(figsize=(30, 15))
-            plt.boxplot(plot_data, labels=labels, vert=False, showfliers=False)
+            ax = plt.gca()
+            for k in range(len(plot_data)):
+                d = plot_data[k]
+                ax.barh(
+                    y=k,
+                    left=d["ci_95_lower"],
+                    width=d["ci_95_upper"] - d["ci_95_lower"],
+                    alpha=0.7,
+                    # color="red",
+                    label=labels[k].split("_")[-1],
+                    height=height,
+                )
+                ax.vlines(
+                    x=d["mean"],
+                    ymin=k - height / 2,
+                    ymax=k + height / 2,
+                    label=labels[k].split("_")[-1],
+                    color='k',
+                    alpha=1,
+                )
+            ax.set_yticks(list(range(len(labels))))
+            ax.set_yticklabels([label.split("_")[-1] for label in labels], fontsize='xx-large')
+            # plt.boxplot(plot_data, labels=labels, vert=False, showfliers=False)
             plt.title(f"{metric}_{plot_name}")
             plt.savefig(f"./figures/{metric}_{plot_name}.png")
             plt.close()
