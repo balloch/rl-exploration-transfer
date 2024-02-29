@@ -123,7 +123,7 @@ def iq(arr: np.ndarray, quartile_margin: int = 25):
 def bootstrapped_sampling(arr: np.ndarray, k: int = 6, m: int = 5):
     n = len(arr)
     idx = np.array([np.random.choice(n, size=(k,), replace=False) for _ in range(m)])
-    return arr[idx]
+    return arr[idx].flatten()
 
 
 def calc_stats(arr: np.ndarray, ci_percentile: int = 95):
@@ -189,13 +189,41 @@ class Metrics:
 
     @staticmethod
     def final_reward(rewards_df: pd.DataFrame):
-        return rewards_df["rewards"].iloc[-1]
+        return rewards_df["rewards"].iloc[-10:].mean()
+
+    @staticmethod
+    def resiliance(rewards_df: pd.DataFrame):
+        novelty_step = rewards_df["novelty_step"].iloc[0]
+        return rewards_df["rewards"][rewards_df.index > novelty_step].min()
+
+    @staticmethod
+    def adaptive_efficiency(rewards_df: pd.DataFrame):
+        return Metrics.percentile_efficiency(rewards_df=rewards_df, percetile=99)
+
+    @staticmethod
+    def k_shot_efficiency(rewards_df: pd.DataFrame, k: int = 100):
+        novelty_step = rewards_df["novelty_step"].iloc[0]
+        task_two_rewards = rewards_df["rewards"][rewards_df.index > novelty_step]
+        return task_two_rewards.rolling(window=5, center=True).iloc[k]
+
+    @staticmethod
+    def percentile_efficiency(rewards_df: pd.DataFrame, percetile: int = 50):
+        novelty_step = rewards_df["novelty_step"].iloc[0]
+        final_reward = Metrics.final_reward(rewards_df=rewards_df)
+        task_two_rewards = rewards_df["rewards"][rewards_df.index > novelty_step]
+        return (
+            task_two_rewards[
+                task_two_rewards.rolling(window=5, center=True).mean()
+                >= percetile / 100 * final_reward
+            ].index.min()
+            - task_two_rewards.index.min()
+        )
 
     @staticmethod
     def transfer_area_under_curve(rewards_df: pd.DataFrame):
         novelty_step = rewards_df["novelty_step"].iloc[0]
         n_tasks = rewards_df["n_tasks"].iloc[0]
-        assert n_tasks == 2
+        assert n_tasks == 2, "Only two tasks allowed for now"
         task_one_rewards = rewards_df["rewards"][rewards_df.index <= novelty_step]
         task_two_rewards = rewards_df["rewards"][rewards_df.index > novelty_step]
 
@@ -237,7 +265,7 @@ def plot_results(results: Dict[str, Dict[str, Any]]):
             plot_name = plots_to_generate[j]
             plot_data = data[i][j]
             plt.figure(figsize=(30, 15))
-            plt.boxplot(plot_data, labels=labels, vert=False, showfliers=True)
+            plt.boxplot(plot_data, labels=labels, vert=False, showfliers=False)
             plt.title(f"{metric}_{plot_name}")
             plt.savefig(f"./figures/{metric}_{plot_name}.png")
             plt.close()
