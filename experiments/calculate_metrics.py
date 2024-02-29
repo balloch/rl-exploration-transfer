@@ -261,6 +261,7 @@ def plot_results(results: Dict[str, Dict[str, Any]]):
 
     for i in range(len(metric_names)):
         metric = metric_names[i]
+        os.makedirs(f"./figures/{metric}", exist_ok=True)
         for j in range(len(plots_to_generate)):
             plot_name = plots_to_generate[j]
             plot_data = data[i][j]
@@ -289,7 +290,7 @@ def plot_results(results: Dict[str, Dict[str, Any]]):
             ax.set_yticklabels([label.split("_")[-1] for label in labels], fontsize='xx-large')
             # plt.boxplot(plot_data, labels=labels, vert=False, showfliers=False)
             plt.title(f"{metric}_{plot_name}")
-            plt.savefig(f"./figures/{metric}_{plot_name}.png")
+            plt.savefig(f"./figures/{metric}/{plot_name}.png")
             plt.close()
 
 
