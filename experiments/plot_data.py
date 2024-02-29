@@ -19,10 +19,12 @@ from experiments.wandb_run_data import make_data_loader_parser, load_data
 
 
 wrd.PULL_FROM_WANDB = False
-IMG_NAME = "converged_ep_rew_mean.png"
+wrd.FILTER_UNCONVERGED_OUT = True
 ESTIMATOR = "mean"
 ERROR_BAR_TYPE = "ci"
 ERROR_BAR_ARG = 95
+ALGS = None
+CROP_MARGIN = 500000
 
 
 def estimator_type(s: str):
@@ -55,14 +57,6 @@ def make_parser():
     )
 
     parser.add_argument(
-        "--img-name",
-        "-i",
-        type=str,
-        default=IMG_NAME,
-        help="The name of the image to save the plot to in the figures folder.",
-    )
-
-    parser.add_argument(
         "--estimator",
         "-e",
         type=estimator_type,
@@ -85,10 +79,49 @@ def make_parser():
         help="The type of error bar argument (in seaborns lineplot function) to use.",
     )
 
+    parser.add_argument(
+        "--algs",
+        "-a",
+        type=str,
+        nargs="+",
+        default=ALGS,
+        help="Which algorithms to plot.",
+    )
+
+    parser.add_argument(
+        "--crop-margin",
+        "-cm",
+        type=int,
+        default=CROP_MARGIN,
+        help="The amount of margin before novelty to add on the cropped graph.",
+    )
+
     return parser
 
 
 def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
+
+    os.makedirs("./figures/rewards", exist_ok=True)
+
+    df = df.loc[
+        [
+            args.algs is None or any((alg in name) for alg in args.algs)
+            for name in df.index.get_level_values("experiment_name_idx")
+        ]
+    ]
+    n_tasks = df["n_tasks"].iloc[0]
+    assert n_tasks == 2
+
+    novelty_step = df["novelty_step"].iloc[0]
+    left_crop = novelty_step - args.crop_margin
+
+    img_name = ""
+    if args.filter_unconverged_out:
+        img_name += "converged_"
+    img_name += "ep_rew_mean"
+    if args.algs is not None:
+        img_name += "_" + "_".join(args.algs)
+
     plot = sns.lineplot(
         x="global_step",
         y="rollout/ep_rew_mean",
@@ -98,7 +131,23 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
         err_kws={"alpha": 0.1},
         estimator=args.estimator,
     )
-    plot.figure.savefig(f"figures/{args.img_name}")
+    plot.figure.savefig(f"figures/rewards/{img_name}.png")
+    plt.close()
+
+    plt.figure()
+    plt.axvline(x=novelty_step, linestyle="--")
+
+    plot = sns.lineplot(
+        x="global_step",
+        y="rollout/ep_rew_mean",
+        hue="experiment_name",
+        data=df.loc[df["global_step"] >= left_crop],
+        errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
+        err_kws={"alpha": 0.1},
+        estimator=args.estimator,
+    )
+
+    plot.figure.savefig(f"figures/rewards/cropped_{img_name}.png")
     plt.close()
 
 
