@@ -9,12 +9,14 @@ import argparse
 import json
 
 from utils.args import get_args
+from utils.arg_types import str2bool
 
 RESULTS_FILE = "results.json"
 LABEL = "results"
-AGGREGATORS = ["bootstrapped_converged"]
+AGGREGATORS = ["bootstrapped_converged", "converged", "all"]
 METRICS = ["transfer_area_under_curve", "adaptive_efficiency"]
-COLUMNS = ["mean", "std"]
+PREFIX_LIST = ["", "iq_"]
+ROTATE = True
 
 
 def make_parser():
@@ -26,7 +28,10 @@ def make_parser():
     parser.add_argument("--label", "-l", type=str, default=LABEL)
     parser.add_argument("--aggregators", "-a", type=str, nargs="+", default=AGGREGATORS)
     parser.add_argument("--metrics", "-m", type=str, nargs="+", default=METRICS)
-    parser.add_argument("--columns", "-cl", type=str, nargs="+", default=COLUMNS)
+    parser.add_argument(
+        "--prefix-list", "-pl", type=str, nargs="+", default=PREFIX_LIST
+    )
+    parser.add_argument("--rotate", "-r", type=str2bool, default=ROTATE)
 
     return parser
 
@@ -49,7 +54,7 @@ def get_all_metric_names(results):
 
 
 def generate_latex_tables(
-    results, metric_names, aggregators, columns=None, label="results"
+    results, metric_names, aggregators, prefix_lst, label="results", rotate=True
 ):
     def format_num(num: float) -> str:
         return f"{num:.2e}"
@@ -57,34 +62,34 @@ def generate_latex_tables(
     latex_code = ""
 
     for aggregator in aggregators:
-        header = "\\textbf{Metric} & \\textbf{Experiment}"
-        for col in columns:
-            header += f" & \\textbf{{{col.title()}}}"
+        header = ""
+        for metric in metric_names:
+            header += f" & \\multicolumn{{{len(prefix_lst)}}}{{c|}}{{\\textbf{{{metric.replace('_', ' ').title()}}}}}"
+        header += f" \\\\ \n"
+        header += "\t\t\\textbf{Exploration Algorithm} & " + " & ".join(
+            [
+                f"{prefix.replace('_', ' ')}mean $\\pm$ {prefix.replace('_', ' ')}std"
+                for _ in metric_names
+                for prefix in prefix_lst
+            ]
+        )
         header += f" \\\\"
         rows = []
 
-        for metric_name in metric_names:
-            for i, experiment in enumerate(results):
-                if i == 0:
-                    row = f"\\multirow{{{len(results)}}}{{*}}{{\\textbf{{{metric_name.replace('_', ' ').title()}}}}} & {experiment.split('_')[-1].upper()}"
-                else:
-                    row = f" & {experiment.split('_')[-1].upper()}"
-                if (
-                    aggregator in results[experiment]
-                    and metric_name in results[experiment][aggregator]
-                ):
-                    metric_data = results[experiment][aggregator][metric_name]
-                    for col in columns:
-                        row += f" & {format_num(metric_data[col])}"
-                    row += f" \\\\"
-                else:
-                    row += " &" * len(columns) + f" \\\\"
-                rows.append(row)
-            rows.append("\\hline")
+        for experiment in results:
+            row = f"{experiment.split('_')[-1].upper()} & "
+            for metric_name in metric_names:
+                metric_data = results[experiment][aggregator][metric_name]
+                for prefix in prefix_lst:
+                    mu = metric_data[f"{prefix}mean"]
+                    std = metric_data[f"{prefix}std"]
+                    row += f"{format_num(mu)} $\\pm$ {format_num(std)} & "
+            rows.append(row[:-2] + f"\\\\")
+        rows.append("\\hline")
 
         # Generate LaTeX code
         table_code = "\\begin{table}[h]\n\t\\centering"
-        table_code += f"\n\t\\begin{{tabular}}{{{'|c' * (len(columns) + 2) + '|'}}}\n\t\t\\hline\n\t\t{header}\n\t\t\\hline\n\t\t"
+        table_code += f"\n\t\\begin{{tabular}}{{{'|c' * (len(metric_names) * len(prefix_lst) + 1) + '|'}}}\n\t\t\\hline\n\t\t{header}\n\t\t\\hline\n\t\t"
         table_code += "\n\t\t".join(rows)
         table_code += "\n\t\\end{tabular}"
         table_code += f"\n\t\\caption{{Metrics from each experiment ({aggregator.replace('_', ' ').title()} Aggregator).}}"
@@ -94,6 +99,13 @@ def generate_latex_tables(
         table_code = table_code.replace("\t", "    ")
 
         latex_code += table_code
+
+    if rotate:
+        latex_code = (
+            f"\\begin{{landscape}}\n\t"
+            + latex_code.replace("\n", "\n\t")
+            + f"\n\\end{{landscape}}"
+        )
 
     return latex_code
 
@@ -106,7 +118,12 @@ def main():
 
     print(
         generate_latex_tables(
-            results, args.metrics, args.aggregators, args.columns, args.label
+            results,
+            args.metrics,
+            args.aggregators,
+            args.prefix_list,
+            args.label,
+            args.rotate,
         )
     )
 
