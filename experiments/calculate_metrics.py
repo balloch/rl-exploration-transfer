@@ -126,16 +126,25 @@ def bootstrapped_sampling(arr: np.ndarray, k: int = 6, m: int = 5):
     return arr[idx].flatten()
 
 
-def calc_stats(arr: np.ndarray, ci_percentile: int = 95):
+def calc_stats(arr: np.ndarray, ci_percentile: int = 95, prefix: str = ""):
     margin = (100 - ci_percentile) / 2
     return {
-        "mean": arr.mean(axis=-1).mean(),
-        "std": arr.std(axis=-1).mean(),
-        "max": arr.max(axis=-1).mean(),
-        "min": arr.min(axis=-1).mean(),
-        f"ci_{ci_percentile}_lower": np.percentile(arr, margin, axis=-1).mean(),
-        f"ci_{ci_percentile}_upper": np.percentile(arr, 100 - margin, axis=-1).mean(),
-        "arr": list(arr.reshape((-1, arr.shape[-1])).mean(0)),
+        f"{prefix}mean": arr.mean(axis=-1).mean(),
+        f"{prefix}std": arr.std(axis=-1).mean(),
+        f"{prefix}max": arr.max(axis=-1).mean(),
+        f"{prefix}min": arr.min(axis=-1).mean(),
+        f"{prefix}ci_{ci_percentile}_lower": np.percentile(arr, margin, axis=-1).mean(),
+        f"{prefix}ci_{ci_percentile}_upper": np.percentile(
+            arr, 100 - margin, axis=-1
+        ).mean(),
+        f"{prefix}arr": list(arr.reshape((-1, arr.shape[-1])).mean(0)),
+    }
+
+
+def calc_arr_and_iq_stats(arr: np.ndarray, ci_percentile: int = 95):
+    return {
+        **calc_stats(arr, ci_percentile=ci_percentile),
+        **calc_stats(iq(arr), ci_percentile=ci_percentile, prefix="iq_"),
     }
 
 
@@ -144,15 +153,7 @@ class Aggregators:
     @staticmethod
     def converged(metrics: Dict[str, np.ndarray]):
         return {
-            k: calc_stats(metrics[k][metrics["converged"]])
-            for k in metrics
-            if k != "converged"
-        }
-
-    @staticmethod
-    def converged_iq(metrics: Dict[str, np.ndarray]):
-        return {
-            k: calc_stats(iq(metrics[k][metrics["converged"]]))
+            k: calc_arr_and_iq_stats(metrics[k][metrics["converged"]])
             for k in metrics
             if k != "converged"
         }
@@ -160,26 +161,18 @@ class Aggregators:
     @staticmethod
     def bootstrapped_converged(metrics: Dict[str, np.ndarray]):
         return {
-            k: calc_stats(bootstrapped_sampling(metrics[k][metrics["converged"]]))
-            for k in metrics
-            if k != "converged"
-        }
-
-    @staticmethod
-    def bootstrapped_converged_iq(metrics: Dict[str, np.ndarray]):
-        return {
-            k: calc_stats(iq(bootstrapped_sampling(metrics[k][metrics["converged"]])))
+            k: calc_arr_and_iq_stats(
+                bootstrapped_sampling(metrics[k][metrics["converged"]])
+            )
             for k in metrics
             if k != "converged"
         }
 
     @staticmethod
     def all(metrics: Dict[str, np.ndarray]):
-        return {k: calc_stats(metrics[k]) for k in metrics if k != "converged"}
-
-    @staticmethod
-    def all_iq(metrics: Dict[str, np.ndarray]):
-        return {k: calc_stats(iq(metrics[k])) for k in metrics if k != "converged"}
+        return {
+            k: calc_arr_and_iq_stats(metrics[k]) for k in metrics if k != "converged"
+        }
 
 
 class Metrics:
@@ -265,33 +258,36 @@ def plot_results(results: Dict[str, Dict[str, Any]]):
         for j in range(len(plots_to_generate)):
             plot_name = plots_to_generate[j]
             plot_data = data[i][j]
-            plt.figure(figsize=(30, 15))
-            ax = plt.gca()
-            for k in range(len(plot_data)):
-                d = plot_data[k]
-                ax.barh(
-                    y=k,
-                    left=d["ci_95_lower"],
-                    width=d["ci_95_upper"] - d["ci_95_lower"],
-                    alpha=0.7,
-                    # color="red",
-                    label=labels[k].split("_")[-1],
-                    height=height,
+            for prefix in ["", "iq_"]:
+                plt.figure(figsize=(30, 15))
+                ax = plt.gca()
+                for k in range(len(plot_data)):
+                    d = plot_data[k]
+                    ax.barh(
+                        y=k,
+                        left=d[f"{prefix}ci_95_lower"],
+                        width=d[f"{prefix}ci_95_upper"] - d[f"{prefix}ci_95_lower"],
+                        alpha=0.7,
+                        # color="red",
+                        label=labels[k].split("_")[-1],
+                        height=height,
+                    )
+                    ax.vlines(
+                        x=d[f"{prefix}mean"],
+                        ymin=k - height / 2,
+                        ymax=k + height / 2,
+                        label=labels[k].split("_")[-1],
+                        color="k",
+                        alpha=1,
+                    )
+                ax.set_yticks(list(range(len(labels))))
+                ax.set_yticklabels(
+                    [label.split("_")[-1] for label in labels], fontsize="xx-large"
                 )
-                ax.vlines(
-                    x=d["mean"],
-                    ymin=k - height / 2,
-                    ymax=k + height / 2,
-                    label=labels[k].split("_")[-1],
-                    color='k',
-                    alpha=1,
-                )
-            ax.set_yticks(list(range(len(labels))))
-            ax.set_yticklabels([label.split("_")[-1] for label in labels], fontsize='xx-large')
-            # plt.boxplot(plot_data, labels=labels, vert=False, showfliers=False)
-            plt.title(f"{metric}_{plot_name}")
-            plt.savefig(f"./figures/{metric}/{plot_name}.png")
-            plt.close()
+                # plt.boxplot(plot_data, labels=labels, vert=False, showfliers=False)
+                plt.title(f"{metric}_{plot_name}")
+                plt.savefig(f"./figures/{metric}/{prefix}{plot_name}.png")
+                plt.close()
 
 
 def main(args):
