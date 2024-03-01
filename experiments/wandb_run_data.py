@@ -10,6 +10,7 @@ from experiments.config import WANDB_PROJECT_NAME
 from utils.arg_types import str2bool, tup
 
 import argparse
+import datetime
 import wandb
 import tqdm
 import pandas as pd
@@ -114,6 +115,7 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
         filters={
             "$and": [
                 {"config.full_config.env_configs_file": args.env_configs_file},
+                {"created_at": {"$lt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
             ]
             + [
                 {"tags": {"$in": [f"converged_{n}"]}}
