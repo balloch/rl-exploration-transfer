@@ -148,7 +148,6 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
     plot.figure.savefig(f"figures/rewards/cropped_{img_name}.png")
     plt.close()
 
-    img_name = "converged_" + img_name
     df = df.loc[df["converged_all"]]
 
     plot = sns.lineplot(
@@ -160,7 +159,7 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
         err_kws={"alpha": 0.1},
         estimator=args.estimator,
     )
-    plot.figure.savefig(f"figures/rewards/{img_name}.png")
+    plot.figure.savefig(f"figures/rewards/converged_{img_name}.png")
     plt.close()
 
     plt.figure()
@@ -176,7 +175,7 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
         estimator=args.estimator,
     )
 
-    plot.figure.savefig(f"figures/rewards/cropped_{img_name}.png")
+    plot.figure.savefig(f"figures/rewards/converged_cropped_{img_name}.png")
     plt.close()
 
 
