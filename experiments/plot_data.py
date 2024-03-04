@@ -19,7 +19,7 @@ from experiments.wandb_run_data import make_data_loader_parser, load_data
 
 
 wrd.PULL_FROM_WANDB = False
-wrd.FILTER_UNCONVERGED_OUT = True
+wrd.FILTER_UNCONVERGED_OUT = False
 ESTIMATOR = "mean"
 ERROR_BAR_TYPE = "ci"
 ERROR_BAR_ARG = 95
@@ -116,11 +116,40 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
     left_crop = novelty_step - args.crop_margin
 
     img_name = ""
-    if args.filter_unconverged_out:
-        img_name += "converged_"
     img_name += "ep_rew_mean"
     if args.algs is not None:
         img_name += "_" + "_".join(args.algs)
+
+    plot = sns.lineplot(
+        x="global_step",
+        y="rollout/ep_rew_mean",
+        hue="experiment_name",
+        data=df,
+        errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
+        err_kws={"alpha": 0.1},
+        estimator=args.estimator,
+    )
+    plot.figure.savefig(f"figures/rewards/{img_name}.png")
+    plt.close()
+
+    plt.figure()
+    plt.axvline(x=novelty_step, linestyle="--")
+
+    plot = sns.lineplot(
+        x="global_step",
+        y="rollout/ep_rew_mean",
+        hue="experiment_name",
+        data=df.loc[df["global_step"] >= left_crop],
+        errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
+        err_kws={"alpha": 0.1},
+        estimator=args.estimator,
+    )
+
+    plot.figure.savefig(f"figures/rewards/cropped_{img_name}.png")
+    plt.close()
+
+    img_name = "converged_" + img_name
+    df = df.loc[df["converged_all"]]
 
     plot = sns.lineplot(
         x="global_step",

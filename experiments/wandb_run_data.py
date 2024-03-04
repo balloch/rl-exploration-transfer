@@ -13,12 +13,13 @@ import argparse
 import datetime
 import wandb
 import tqdm
+import numpy as np
 import pandas as pd
 
 
 ENV_CONFIGS_FILE = "door_key_change"
 N_TASKS = 2
-FILTER_UNCONVERGED_OUT = True
+FILTER_UNCONVERGED_OUT = False
 STEP_RANGE = (0, 0)
 
 PULL_FROM_WANDB = True
@@ -26,6 +27,9 @@ DATA_FILE = "wandb_runs.pkl"
 
 
 api = None
+additional_filters = [
+    {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}}
+]
 
 
 def get_api_instance():
@@ -40,7 +44,9 @@ def edit_runs(
 ):
     api = get_api_instance()
 
-    wandb_runs = api.runs(project_name, include_sweeps=include_sweeps)
+    wandb_runs = api.runs(
+        project_name, filters={"state": "finished"}, include_sweeps=include_sweeps
+    )
 
     for wandb_run in tqdm.tqdm(wandb_runs):
         update_run(wandb_run)
@@ -115,7 +121,8 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
         filters={
             "$and": [
                 {"config.full_config.env_configs_file": args.env_configs_file},
-                {"created_at": {"$lt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
+                {"state": "finished"},
+                *additional_filters,
             ]
             + [
                 {"tags": {"$in": [f"converged_{n}"]}}
@@ -149,8 +156,13 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
         df["run_id"] = run_id
         df["experiment_name"] = experiment_name
 
+        converged = []
+
         for i in range(args.n_tasks):
-            df[f"converged_{i}"] = f"converged_{i}" in wandb_run.tags
+            converged.append(f"converged_{i}" in wandb_run.tags)
+            df[f"converged_{i}"] = converged[i]
+
+        df[f"converged_all"] = np.all(converged)
 
         df["novelty_step"] = wandb_run.config["novelty_step"]
         df["n_tasks"] = wandb_run.config["n_tasks"]
@@ -191,6 +203,7 @@ def load_data(args: argparse.Namespace) -> pd.DataFrame:
 
     return full_df
 
+
 def get_index_dict(df: pd.DataFrame):
     experiment_name_idx = df.index.get_level_values("experiment_name_idx")
     run_id_idx = df.index.get_level_values("run_id_idx")
@@ -198,11 +211,13 @@ def get_index_dict(df: pd.DataFrame):
 
     indices = {}
 
-    for experiment_name, run_id, row_num in zip(experiment_name_idx, run_id_idx, row_idx):
+    for experiment_name, run_id, row_num in zip(
+        experiment_name_idx, run_id_idx, row_idx
+    ):
         if experiment_name not in indices:
             indices[experiment_name] = {}
         if run_id not in indices[experiment_name]:
             indices[experiment_name][run_id] = []
         indices[experiment_name][run_id].append(row_num)
 
-    return indices        
+    return indices
