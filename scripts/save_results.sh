@@ -3,6 +3,8 @@ if [[ $# -eq 0 ]] ; then
     exit 1
 fi
 
+mkdir -p results/$1
+rm -rf results/$1
 mkdir -p results/$1/figures
 mkdir -p results/$1/data
 mv figures/* results/$1/figures
