@@ -10,7 +10,7 @@ sweep_configuration:
   parameters:
     beta:
       distribution: q_log_uniform_values
-      q: 0.00001
+      q: 0.0001
       min: 0.0001
       max: 0.1
     lambd:
