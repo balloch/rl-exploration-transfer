@@ -1,0 +1,9 @@
+mujoco<2.3
+dm_control
+matplotlib<3.7
+pandas<1.5
+oauthlib>=3.0.0
+# shimmy[dm-control]
+# gymnasium
+
+
