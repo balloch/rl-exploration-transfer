@@ -72,10 +72,13 @@ class ICM(object):
         obs = obs.to(self.device)
         actions = actions.to(self.device)
 
-        if len(self.ob_shape) == 3:
-            encoded_obs = self.cnn_encoder(obs)
+        if self.action_type == 'cont':
+            encoded_obs = obs
         else:
-            encoded_obs = self.mlp_encoder(obs)
+            if len(self.ob_shape) == 3:
+                encoded_obs = self.cnn_encoder(obs)
+            else:
+                encoded_obs = self.mlp_encoder(obs)
 
         dataset = TensorDataset(encoded_obs[:-1], actions[:-1], encoded_obs[1:])
         loader = DataLoader(dataset=dataset, batch_size=self.batch_size, drop_last=True)
@@ -120,10 +123,13 @@ class ICM(object):
 
         with torch.no_grad():
             for idx in range(n_envs):
-                if len(self.ob_shape) == 3:
-                    encoded_obs = self.cnn_encoder(obs[:, idx, :, :, :])
+                if self.action_type == 'cont':
+                    encoded_obs = obs
                 else:
-                    encoded_obs = self.mlp_encoder(obs[:, idx])
+                    if len(self.ob_shape) == 3:
+                        encoded_obs = self.cnn_encoder(obs)
+                    else:
+                        encoded_obs = self.mlp_encoder(obs)
                 pred_next_obs = self.inverse_forward_model(
                     encoded_obs[:-1], actions[:-1, idx], next_obs=None, training=False)
                 processed_next_obs = torch.clip(encoded_obs[1:], min=-1.0, max=1.0)
