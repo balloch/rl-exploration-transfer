@@ -2,8 +2,8 @@
 conda create -n dm_transfer python=3.8 -y
 conda activate dm_transfer
 export MUJOCO_GL=egl
-conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit
-conda install cmake bzip2
+conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit -y
+conda install cmake bzip2 -y
 python -m pip install -r dm_req.txt
 python -m pip install -e ../realworldrl_suite
 python -m pip install shimmy
