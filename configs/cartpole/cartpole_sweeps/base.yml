@@ -1,0 +1,19 @@
+sweep_env_configs:
+- env_id: rwrl2gym
+  rwrl_kwargs:
+    domain_name: cartpole
+    task_name: realworld_swingup
+    perturb_spec:
+        enable: true
+        scheduler: constant
+        param: pole_length
+        start: 1
+        min: 1
+        max: 1
+eval_freq: 2000
+eval_episodes: 10
+min_reward_threshold: 800
+total_time_steps: 1000000
+n_runs: 1
+n_envs: 10
+verbose: 1

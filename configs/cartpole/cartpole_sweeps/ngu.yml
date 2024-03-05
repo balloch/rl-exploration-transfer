@@ -1,0 +1,15 @@
+rl_alg_kwargs:
+  ir_alg_kwargs: 
+    latent_dim: 128
+    lr: 0.0006
+    batch_size: 64
+    beta: $beta
+sweep_configuration:
+  method: bayes
+  parameters:
+    beta:
+      distribution: q_log_uniform_values
+      q: 0.0001
+      min: 0.001
+      max: 1
+sweep_count: 10
