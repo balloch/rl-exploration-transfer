@@ -6,6 +6,7 @@ conda install -c "nvidia/label/cuda-11.8.0" cuda-toolkit -y
 conda install cmake bzip2 -y
 python -m pip install -r dm_req.txt
 python -m pip install -e ../realworldrl_suite
+python -m pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 python -m pip install shimmy
 python -m pip install gymnasium
 python -m pip install stable_baselines3
