@@ -1,3 +1,11 @@
+import os
+import sys
+
+curren_dir_path = os.path.dirname(os.path.realpath(__file__))
+parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
+sys.path.append(parent_dir_path)
+
+
 from typing import Any, Dict, Optional
 
 from shimmy.dm_control_compatibility import DmControlCompatibilityV0
@@ -17,3 +25,6 @@ class RWRL2Gym(DmControlCompatibilityV0):
         super().__init__(
             env=dm_control_env, render_mode=render_mode, render_kwargs=render_kwargs
         )
+
+
+gym.register(id="rwrl2gym", entry_point=f"env_converters.rwrl_to_gym:RWRL2Gym")

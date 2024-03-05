@@ -27,6 +27,7 @@ import rlexplore
 import minigrid
 from novgrid import NoveltyEnv
 from novgrid.env_configs import get_env_configs
+import env_converters.rwrl_to_gym
 
 from utils import get_all_subclasses_from_modules
 
