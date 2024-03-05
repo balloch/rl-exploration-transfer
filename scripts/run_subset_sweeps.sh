@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 methods=$(echo $1 | tr "," "\n")
 for var in $methods
 do

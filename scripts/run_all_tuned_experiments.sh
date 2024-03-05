@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 ./scripts/run_experiment.sh tuned/ppo.yml base.yml $@ --experiment-suffix _none
 ./scripts/run_experiment.sh tuned/re3.yml ir_ppo.yml tuned/ppo.yml base.yml $@
 ./scripts/run_experiment.sh tuned/rise.yml ir_ppo.yml tuned/ppo.yml base.yml $@

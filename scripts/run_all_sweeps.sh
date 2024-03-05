@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 ./scripts/run_sweep.sh sweeps/ppo.yml sweeps/base.yml ppo.yml $@ --experiment-suffix _none
 ./scripts/run_sweep.sh sweeps/re3.yml sweeps/base.yml re3.yml ir_ppo.yml ppo.yml $@
 ./scripts/run_sweep.sh sweeps/rise.yml sweeps/base.yml rise.yml ir_ppo.yml ppo.yml $@

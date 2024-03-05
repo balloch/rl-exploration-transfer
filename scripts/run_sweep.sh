@@ -1,5 +1,5 @@
-#!/usr/bin/bash
+#!/bin/bash
 eval "$(conda shell.bash hook)"
-conda activate transfer_exploration_env_2
+conda activate dm_transfer
 python experiments/sweep.py -c $@
 conda deactivate
