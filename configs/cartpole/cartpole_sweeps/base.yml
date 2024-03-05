@@ -10,6 +10,8 @@ sweep_env_configs:
         start: 1
         min: 1
         max: 1
+wrappers:
+ - FlattenObservation
 eval_freq: 2000
 eval_episodes: 10
 min_reward_threshold: 800
