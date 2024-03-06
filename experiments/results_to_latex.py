@@ -11,7 +11,7 @@ import json
 from utils.args import get_args
 from utils.arg_types import str2bool
 
-RESULTS_FILE = "results.json"
+RESULTS_FILE = "./data/results.json"
 LABEL = "results"
 AGGREGATORS = ["bootstrapped_converged", "converged", "all"]
 METRICS = ["transfer_area_under_curve", "adaptive_efficiency"]
@@ -37,7 +37,7 @@ def make_parser():
 
 
 def load_results(results_file):
-    with open(f"./data/{results_file}", "r") as file:
+    with open(results_file, "r") as file:
         results_data = json.load(file)
     return results_data
 
