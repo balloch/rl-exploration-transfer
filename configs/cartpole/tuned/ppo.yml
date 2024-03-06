@@ -10,5 +10,5 @@ rl_alg_kwargs:
   ent_coef: 0.01
   vf_coef: 0.5
   max_grad_norm: 0.5
-experiment_prefix: cartpole_
+experiment_prefix: cartpole_tuned_
 experiment_suffix: ""
