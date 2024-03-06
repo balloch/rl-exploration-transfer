@@ -28,7 +28,7 @@ DATA_FILE = "wandb_runs.pkl"
 
 api = None
 additional_filters = [
-    {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}}
+    {"created_at": {"$lt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}}
 ]
 
 

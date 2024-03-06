@@ -126,9 +126,11 @@ def bootstrapped_sampling(arr: np.ndarray, k: int = 6, m: int = 5):
     return arr[idx].flatten()
 
 
-def calc_stats(arr: np.ndarray, ci_percentile: int = 95, prefix: str = ""):
+def calc_stats(
+    arr: np.ndarray, ci_percentile: int = 95, prefix: str = "", include_arr: bool = True
+):
     margin = (100 - ci_percentile) / 2
-    return {
+    d = {
         f"{prefix}mean": arr.mean(axis=-1).mean(),
         f"{prefix}std": arr.std(axis=-1).mean(),
         f"{prefix}max": arr.max(axis=-1).mean(),
@@ -137,8 +139,10 @@ def calc_stats(arr: np.ndarray, ci_percentile: int = 95, prefix: str = ""):
         f"{prefix}ci_{ci_percentile}_upper": np.percentile(
             arr, 100 - margin, axis=-1
         ).mean(),
-        f"{prefix}arr": list(arr.reshape((-1, arr.shape[-1])).mean(0)),
     }
+    if include_arr:
+        d[f"{prefix}arr"] = list(arr.reshape((-1, arr.shape[-1])).mean(0))
+    return d
 
 
 def calc_arr_and_iq_stats(
@@ -151,11 +155,13 @@ def calc_arr_and_iq_stats(
             bootstrapped_sampling(arr=arr, k=k, m=m),
             ci_percentile=ci_percentile,
             prefix="bootstrapped_",
+            include_arr=False,
         ),
         **calc_stats(
-            bootstrapped_sampling(arr=iq(arr), k=k, m=m),
+            bootstrapped_sampling(arr=iq(arr), k=int(k * 0.75), m=m),
             ci_percentile=ci_percentile,
             prefix="iq_bootstrapped_",
+            include_arr=False,
         ),
     }
 
@@ -278,7 +284,8 @@ def plot_results(results: Dict[str, Dict[str, Any]]):
                     ax.barh(
                         y=k,
                         left=d[f"{prefix}bootstrapped_ci_95_lower"],
-                        width=d[f"{prefix}bootstrapped_ci_95_upper"] - d[f"{prefix}bootstrapped_ci_95_lower"],
+                        width=d[f"{prefix}bootstrapped_ci_95_upper"]
+                        - d[f"{prefix}bootstrapped_ci_95_lower"],
                         alpha=0.7,
                         # color="red",
                         label=labels[k].split("_")[-1],
