@@ -124,12 +124,12 @@ class ICM(object):
         with torch.no_grad():
             for idx in range(n_envs):
                 if self.action_type == 'cont':
-                    encoded_obs = obs
+                    encoded_obs = obs[:, idx]
                 else:
                     if len(self.ob_shape) == 3:
-                        encoded_obs = self.cnn_encoder(obs)
+                        encoded_obs = self.cnn_encoder(obs[:, idx, :, :, :])
                     else:
-                        encoded_obs = self.mlp_encoder(obs)
+                        encoded_obs = self.mlp_encoder(obs[:, idx])
                 pred_next_obs = self.inverse_forward_model(
                     encoded_obs[:-1], actions[:-1, idx], next_obs=None, training=False)
                 processed_next_obs = torch.clip(encoded_obs[1:], min=-1.0, max=1.0)

@@ -1,5 +1,5 @@
 policy: NoisyActorCriticPolicy
 policy_kwargs:
   num_noisy_layers: 2
-experiment_prefix: novgrid_tuned_
+experiment_prefix: cartpole_tuned_
 experiment_suffix: _noisy
