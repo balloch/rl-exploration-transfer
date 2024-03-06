@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 
-ENV_CONFIGS_FILE = "door_key_change"
+ENV_CONFIGS_FILE = "simple_to_lava_crossing"
 N_TASKS = 2
 FILTER_UNCONVERGED_OUT = False
 STEP_RANGE = (0, 0)
@@ -27,8 +27,11 @@ DATA_FILE = "wandb_runs.pkl"
 
 
 api = None
+additional_filters = []
+
 additional_filters = [
-    {"created_at": {"$lt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}}
+    {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
+    # {"config.full_config.env_configs_file": ENV_CONFIGS_FILE}
 ]
 
 
@@ -37,20 +40,6 @@ def get_api_instance():
     if api is None:
         api = wandb.Api()
     return api
-
-
-def edit_runs(
-    project_name: str, update_run: Callable[[Any], None], include_sweeps: bool = False
-):
-    api = get_api_instance()
-
-    wandb_runs = api.runs(
-        project_name, filters={"state": "finished"}, include_sweeps=include_sweeps
-    )
-
-    for wandb_run in tqdm.tqdm(wandb_runs):
-        update_run(wandb_run)
-        wandb_run.update()
 
 
 def make_data_loader_parser():
@@ -105,6 +94,27 @@ def make_data_loader_parser():
     parser.add_argument("--data-file", "-df", type=str, default=DATA_FILE)
 
     return parser
+
+
+def edit_runs(
+    project_name: str, update_run: Callable[[Any], None], include_sweeps: bool = False
+):
+    api = get_api_instance()
+
+    wandb_runs = api.runs(
+        project_name,
+        filters={
+            "$and": [
+                {"state": "finished"},
+                *additional_filters,
+            ]
+        },
+        include_sweeps=include_sweeps,
+    )
+
+    for wandb_run in tqdm.tqdm(wandb_runs):
+        update_run(wandb_run)
+        wandb_run.update()
 
 
 def load_data(args: argparse.Namespace) -> pd.DataFrame:
