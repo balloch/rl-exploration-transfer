@@ -141,10 +141,22 @@ def calc_stats(arr: np.ndarray, ci_percentile: int = 95, prefix: str = ""):
     }
 
 
-def calc_arr_and_iq_stats(arr: np.ndarray, ci_percentile: int = 95):
+def calc_arr_and_iq_stats(
+    arr: np.ndarray, ci_percentile: int = 95, k: int = 6, m: int = 2000
+):
     return {
         **calc_stats(arr, ci_percentile=ci_percentile),
         **calc_stats(iq(arr), ci_percentile=ci_percentile, prefix="iq_"),
+        **calc_stats(
+            bootstrapped_sampling(arr=arr, k=k, m=m),
+            ci_percentile=ci_percentile,
+            prefix="bootstrapped_",
+        ),
+        **calc_stats(
+            bootstrapped_sampling(arr=iq(arr), k=k, m=m),
+            ci_percentile=ci_percentile,
+            prefix="iq_bootstrapped_",
+        ),
     }
 
 
@@ -265,8 +277,8 @@ def plot_results(results: Dict[str, Dict[str, Any]]):
                     d = plot_data[k]
                     ax.barh(
                         y=k,
-                        left=d[f"{prefix}ci_95_lower"],
-                        width=d[f"{prefix}ci_95_upper"] - d[f"{prefix}ci_95_lower"],
+                        left=d[f"{prefix}bootstrapped_ci_95_lower"],
+                        width=d[f"{prefix}bootstrapped_ci_95_upper"] - d[f"{prefix}bootstrapped_ci_95_lower"],
                         alpha=0.7,
                         # color="red",
                         label=labels[k].split("_")[-1],
