@@ -1,0 +1,10 @@
+rl_alg_kwargs:
+  ir_alg_cls: icm
+  ir_alg_kwargs:
+    envs: envs
+    lr: 0.0003
+    batch_size: 64
+    beta: 0.001
+    kappa: 0
+experiment_prefix: cartpole_tuned_
+experiment_suffix: _icm

@@ -1,0 +1,10 @@
+rl_alg_kwargs:
+  ir_alg_cls: rise
+  ir_alg_kwargs:
+    obs_shape: env_observation_shape
+    action_shape: env_action_shape
+    latent_dim: 64
+    beta: 0.6
+    kappa: 0
+experiment_prefix: cartpole_tuned_
+experiment_suffix: _rise

@@ -1,0 +1,11 @@
+rl_alg_kwargs:
+  ir_alg_cls: ngu
+  ir_alg_kwargs:
+    envs: envs
+    latent_dim: 128
+    lr: 0.0006
+    batch_size: 64
+    beta: 0.4
+    kappa: 0
+experiment_prefix: cartpole_tuned_
+experiment_suffix: _ngu

@@ -1,0 +1,23 @@
+rl_alg_kwargs:
+  ir_alg_cls: diayn
+  ir_alg_kwargs: 
+    envs: envs
+    device: torch_device
+    lr: 0.0025
+    batch_size: 64
+    beta: 0.005
+    kappa: 0
+    skill_key: skill
+    state_key: state
+policy: MultiInputPolicy
+experiment_prefix: cartpole_tuned_
+experiment_suffix: _diayn
+wrappers:
+ - FlattenObservation
+ - DiaynSkillWrapper
+wrappers_kwargs:
+ - {}
+ - skill_size: 6
+   use_discrete_skills: True
+   skill_key: skill
+   state_key: state
