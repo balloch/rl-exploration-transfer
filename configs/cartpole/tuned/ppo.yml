@@ -14,4 +14,5 @@ experiment_prefix: cartpole_tuned_
 experiment_suffix: ""
 n_runs: 5
 n_envs: 10
-wrappers: FlattenObservation
+wrappers: 
+- FlattenObservation
