@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 
-ENV_CONFIGS_FILE = "simple_to_lava_crossing"
+ENV_CONFIGS_FILE = "lava_maze_safe_to_hurt"
 N_TASKS = 2
 FILTER_UNCONVERGED_OUT = False
 STEP_RANGE = (0, 0)
@@ -31,7 +31,9 @@ additional_filters = []
 
 additional_filters = [
     {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
-    # {"config.full_config.env_configs_file": ENV_CONFIGS_FILE}
+    {"config.full_config.env_configs_file": ENV_CONFIGS_FILE},
+    {"config.total_time_steps": 10500000},
+    # {"config.novelty_step": 10000000},
 ]
 
 
