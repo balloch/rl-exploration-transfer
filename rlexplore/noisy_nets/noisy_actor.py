@@ -70,7 +70,7 @@ class NoisyActorCriticPolicy(ActorCriticPolicy):
                     4. Within the elif block add the following line --> self.action_dist = Noisy{Distribution Name}(self.action_space.n, {any other required args})
                 """
                 raise NotImplementedError(
-                    f"Error: noisy probability distribution, not implement for action space of type {type(self.action_space)}. Must be Discrete."
+                    f"Error: noisy probability distribution, not implement for action space of type {type(self.action_space)} with distribution {type(self.action_dist)}."
                 )
 
         return super()._build(lr_schedule)
