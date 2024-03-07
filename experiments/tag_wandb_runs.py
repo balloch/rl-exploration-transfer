@@ -70,10 +70,15 @@ def main(args):
                     novelty_step * task_num * (1 - args.convergence_check_step_ratio)
                     + total_time_steps * args.convergence_check_step_ratio
                 )
+            if task_num != n_tasks - 1:
+                upper_target_idx = novelty_step * (task_num + 1)
+            else:
+                upper_target_idx = total_time_steps
             idx = (df.index.to_series() - target_idx).abs().idxmin()
+            upper_idx = (df.index.to_series() - upper_target_idx).abs().idxmin()
             convergence_tag = f"converged_{task_num}"
             wandb_run.tags = [tag for tag in wandb_run.tags if tag != convergence_tag]
-            if df[idx] > args.convergence_reward_threshold:
+            if df.loc[idx:upper_idx].mean() > args.convergence_reward_threshold:
                 wandb_run.tags.append(convergence_tag)
             wandb_run.update()
 
