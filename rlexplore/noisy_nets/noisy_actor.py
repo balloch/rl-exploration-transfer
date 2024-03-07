@@ -1,4 +1,4 @@
-from typing import Union, List, Type, Dict, Optional, Any
+from typing import Tuple, Union, List, Type, Dict, Optional, Any
 
 import torch
 from torch import nn
@@ -10,7 +10,10 @@ from stable_baselines3.common.torch_layers import (
     NatureCNN,
     FlattenExtractor,
 )
-from stable_baselines3.common.distributions import CategoricalDistribution
+from stable_baselines3.common.distributions import (
+    CategoricalDistribution,
+    SquashedDiagGaussianDistribution,
+)
 
 
 import gymnasium as gym
@@ -23,6 +26,19 @@ class NoisyNetCategoricalDistribution(CategoricalDistribution):
     def proba_distribution_net(self, latent_dim: int) -> nn.Module:
         action_logits = NoisyLinear(latent_dim, self.action_dim)
         return action_logits
+
+
+class NoisyNetSquashedDiagGuassianDistribution(SquashedDiagGaussianDistribution):
+
+    def proba_distribution_net(
+        self, latent_dim: int, log_std_init: float = 0
+    ) -> Tuple[nn.Module, nn.Parameter]:
+        mean_actions = NoisyLinear(latent_dim, self.action_dim)
+        # TODO: allow action dependent std
+        log_std = nn.Parameter(
+            torch.ones(self.action_dim) * log_std_init, requires_grad=True
+        )
+        return mean_actions, log_std
 
 
 class NoisyActorCriticPolicy(ActorCriticPolicy):
@@ -43,6 +59,8 @@ class NoisyActorCriticPolicy(ActorCriticPolicy):
         if self.num_noisy_layers > 0:
             if isinstance(self.action_dist, CategoricalDistribution):
                 self.action_dist = NoisyNetCategoricalDistribution(self.action_space.n)
+            elif isinstance(self.action_dist, SquashedDiagGaussianDistribution):
+                self.action_dist = SquashedDiagGaussianDistribution(self.action_space.n)
             else:
                 """
                 To implement more action spaces following these steps:
