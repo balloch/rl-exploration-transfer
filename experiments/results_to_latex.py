@@ -100,7 +100,7 @@ def generate_latex_tables(
 
         latex_code += table_code
 
-    latex_code = f"{title}\n{latex_code}"
+    latex_code = f"{title.replace('_', ' ')}\n{latex_code}"
 
     if rotate:
         latex_code = (
