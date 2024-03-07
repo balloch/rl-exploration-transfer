@@ -54,7 +54,7 @@ def get_all_metric_names(results):
 
 
 def generate_latex_tables(
-    results, metric_names, aggregators, prefix_lst, label="results", rotate=True
+    title, results, metric_names, aggregators, prefix_lst, label="results", rotate=True
 ):
     def format_num(num: float) -> str:
         return f"{num:.2e}"
@@ -100,6 +100,8 @@ def generate_latex_tables(
 
         latex_code += table_code
 
+    latex_code = f"{title}\n{latex_code}"
+
     if rotate:
         latex_code = (
             f"\\begin{{landscape}}\n\t"
@@ -118,6 +120,7 @@ def main():
 
     print(
         generate_latex_tables(
+            args.results_file,
             results,
             args.metrics,
             args.aggregators,
