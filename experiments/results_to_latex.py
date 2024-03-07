@@ -92,7 +92,7 @@ def generate_latex_tables(
         table_code += f"\n\t\\begin{{tabular}}{{{'|c' * (len(metric_names) * len(prefix_lst) + 1) + '|'}}}\n\t\t\\hline\n\t\t{header}\n\t\t\\hline\n\t\t"
         table_code += "\n\t\t".join(rows)
         table_code += "\n\t\\end{tabular}"
-        table_code += f"\n\t\\caption{{Metrics from each experiment ({aggregator.replace('_', ' ').title()} Aggregator). From {title}}}"
+        table_code += f"\n\t\\caption{{Metrics from each experiment ({aggregator.replace('_', ' ').title()} Aggregator). From {title.replace('_', ' ')}}}"
         table_code += f"\n\t\\label{{tab:{label}}}"
         table_code += "\n\\end{table}\n\n"
 
