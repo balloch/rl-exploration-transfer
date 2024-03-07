@@ -1,5 +1,6 @@
 from typing import Tuple, Union, List, Type, Dict, Optional, Any
 
+import numpy as np
 import torch
 from torch import nn
 
@@ -75,10 +76,12 @@ class NoisyActorCriticPolicy(ActorCriticPolicy):
                 self.action_dist = NoisyNetCategoricalDistribution(self.action_space.n)
             elif isinstance(self.action_dist, SquashedDiagGaussianDistribution):
                 self.action_dist = NoisyNetSquashedDiagGuassianDistribution(
-                    self.action_space.n
+                    int(np.prod(self.action_distaction_space.shape))
                 )
             elif isinstance(self.action_dist, DiagGaussianDistribution):
-                self.action_dist = NoisyDiagGaussianDistribution(self.action_space.n)
+                self.action_dist = NoisyDiagGaussianDistribution(
+                    int(np.prod(self.action_space.shape))
+                )
             else:
                 """
                 To implement more action spaces following these steps:
