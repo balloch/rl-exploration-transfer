@@ -18,6 +18,20 @@ METRICS = ["transfer_area_under_curve", "adaptive_efficiency"]
 PREFIX_LIST = ["", "iq_"]
 ROTATE = True
 
+SORT_ROWS = [
+    "none",
+    "diayn",
+    "girm",
+    "icm",
+    "ngu",
+    "re3",
+    "revd",
+    "ride",
+    "rise",
+    "rnd",
+    "noisy",
+]
+
 
 def make_parser():
     parser = argparse.ArgumentParser()
@@ -85,6 +99,21 @@ def generate_latex_tables(
                     std = metric_data[f"{prefix}std"]
                     row += f"{format_num(mu)} $\\pm$ {format_num(std)} & "
             rows.append(row[:-2] + f"\\\\")
+
+        new_rows = []
+
+        for alg in SORT_ROWS:
+            found = False
+            for row in rows:
+                if row.lower().startswith(alg.lower()):
+                    new_rows.append(row)
+                    found = True
+                    continue
+            if not found:
+                raise ValueError(f"Algorithm {alg.upper()} not found!")
+
+        rows = new_rows
+
         rows.append("\\hline")
 
         # Generate LaTeX code

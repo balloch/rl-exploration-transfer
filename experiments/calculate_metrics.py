@@ -120,7 +120,7 @@ def iq(arr: np.ndarray, quartile_margin: int = 25):
     ]
 
 
-def bootstrapped_sampling(arr: np.ndarray, k: int = 6, m: int = 5):
+def bootstrapped_sampling(arr: np.ndarray, k: int = 2, m: int = 5):
     n = len(arr)
     idx = np.array([np.random.choice(n, size=(k,), replace=False) for _ in range(m)])
     return arr[idx].flatten()
@@ -146,7 +146,7 @@ def calc_stats(
 
 
 def calc_arr_and_iq_stats(
-    arr: np.ndarray, ci_percentile: int = 95, k: int = 6, m: int = 2000
+    arr: np.ndarray, ci_percentile: int = 95, k: int = 2, m: int = 2000
 ):
     return {
         **calc_stats(arr, ci_percentile=ci_percentile),
@@ -209,7 +209,13 @@ class Metrics:
 
     @staticmethod
     def adaptive_efficiency(rewards_df: pd.DataFrame):
-        return Metrics.percentile_efficiency(rewards_df=rewards_df, percetile=99)
+        return Metrics.percentile_efficiency(rewards_df=rewards_df, percetile=95)
+
+    @staticmethod
+    def convergence_efficiency(rewards_df: pd.DataFrame):
+        return Metrics.pre_novelty_percentile_efficiency(
+            rewards_df=rewards_df, percetile=95
+        )
 
     @staticmethod
     def k_shot_efficiency(rewards_df: pd.DataFrame, k: int = 100):
@@ -218,10 +224,25 @@ class Metrics:
         return task_two_rewards.rolling(window=5, center=True).mean().iloc[k]
 
     @staticmethod
+    def pre_novelty_percentile_efficiency(
+        rewards_df: pd.DataFrame, percetile: int = 50
+    ):
+        novelty_step = rewards_df["novelty_step"].iloc[0]
+        task_one_rewards = rewards_df["rewards"][rewards_df.index < novelty_step]
+        final_reward = task_one_rewards.rolling(window=10, center=True).mean().max()
+        return (
+            task_one_rewards[
+                task_one_rewards.rolling(window=5, center=True).mean()
+                >= percetile / 100 * final_reward
+            ].index.min()
+            - task_one_rewards.index.min()
+        )
+
+    @staticmethod
     def percentile_efficiency(rewards_df: pd.DataFrame, percetile: int = 50):
         novelty_step = rewards_df["novelty_step"].iloc[0]
-        final_reward = Metrics.final_reward(rewards_df=rewards_df)
         task_two_rewards = rewards_df["rewards"][rewards_df.index > novelty_step]
+        final_reward = task_two_rewards.rolling(window=10, center=True).mean().max()
         return (
             task_two_rewards[
                 task_two_rewards.rolling(window=5, center=True).mean()
