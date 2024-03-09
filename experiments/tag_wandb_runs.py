@@ -13,7 +13,7 @@ from config import WANDB_PROJECT_NAME
 from utils.args import get_args
 from experiments.wandb_run_data import edit_runs
 
-CONVERGENCE_REWARD_THRESHOLD = 0.8
+CONVERGENCE_REWARD_THRESHOLD = 400
 CONVERGENCE_CHECK_STEP_RATIO = 0.9
 
 

@@ -10,8 +10,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-sns.set_theme(style="whitegrid", rc={"figure.figsize": (30, 15)})
-
 
 from utils.args import get_args
 import experiments.wandb_run_data as wrd
@@ -25,6 +23,22 @@ ERROR_BAR_TYPE = "ci"
 ERROR_BAR_ARG = 95
 ALGS = None
 CROP_MARGIN = 500000
+
+ALG_ORDER = [
+    "None (PPO)",
+    "NoisyNets",
+    "ICM",
+    "DIAYN",
+    "RND",
+    "NGU",
+    "RIDE",
+    "GIRL",
+    "RE3",
+    "RISE",
+    "REVD",
+]
+
+CROP_END = wrd.CROP_END
 
 
 def estimator_type(s: str):
@@ -109,6 +123,35 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
             for name in df.index.get_level_values("experiment_name_idx")
         ]
     ]
+    df = df.loc[df["global_step"] < CROP_END]
+    df = df.loc[df["converged_0"]]
+    replace_names = {"noisy": "NoisyNets", "none": "None (PPO)", "girm": "GIRL"}
+    rename_columns = {
+        "experiment_name": "Exploration Algorithm",
+        "global_step": "Time Steps",
+        "rollout/ep_rew_mean": "Episode Reward Mean",
+    }
+
+    def alg_name(s):
+        for k in replace_names:
+            if k in s:
+                return replace_names[k]
+        return s.split("_")[-1].upper()
+
+    env_name = (
+        df["experiment_name"]
+        .iloc[0]
+        .split("_tuned")[1]
+        .split("_ir")[0]
+        .split("_ppo")[0]
+        .replace("_", " ")
+        .title()
+    )
+
+    df["experiment_name"] = df["experiment_name"].apply(alg_name)
+
+    df = df.rename(columns=rename_columns)
+
     n_tasks = df["n_tasks"].iloc[0]
     assert n_tasks == 2
 
@@ -116,66 +159,63 @@ def visualize_data(args: argparse.Namespace, df: pd.DataFrame) -> None:
     left_crop = novelty_step - args.crop_margin
 
     img_name = ""
-    img_name += "ep_rew_mean"
+    img_name += "reward_mean"
     if args.algs is not None:
         img_name += "_" + "_".join(args.algs)
+    img_name = "converged_0_" + img_name
 
-    plot = sns.lineplot(
-        x="global_step",
-        y="rollout/ep_rew_mean",
-        hue="experiment_name",
-        data=df,
-        errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
-        err_kws={"alpha": 0.1},
-        estimator=args.estimator,
-    )
-    plot.figure.savefig(f"figures/rewards/{img_name}.png")
-    plt.close()
+    sns.set_theme(style="whitegrid", font_scale=3, rc={"figure.figsize": (30, 15)})
 
-    plt.figure()
-    plt.axvline(x=novelty_step, linestyle="--")
+    # plt.figure()
+    # plt.axvline(x=novelty_step, linestyle="--")
 
-    plot = sns.lineplot(
-        x="global_step",
-        y="rollout/ep_rew_mean",
-        hue="experiment_name",
-        data=df.loc[df["global_step"] >= left_crop],
-        errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
-        err_kws={"alpha": 0.1},
-        estimator=args.estimator,
-    )
+    # plot = sns.lineplot(
+    #     x="Time Steps",
+    #     y="Episode Reward Mean",
+    #     hue="Exploration Algorithm",
+    #     hue_order=ALG_ORDER,
+    #     data=df,
+    #     errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
+    #     err_kws={"alpha": 0.05},
+    #     estimator=args.estimator,
+    # )
+    # plt.title(f"{env_name} Episode Rewards")
+    # plot.figure.savefig(f"figures/rewards/{img_name}.png")
+    # plt.close()
 
-    plot.figure.savefig(f"figures/rewards/cropped_{img_name}.png")
-    plt.close()
+    # plt.figure()
+    # plt.axvline(x=novelty_step, linestyle="--")
 
-    df = df.loc[df["converged_all"]]
+    # plot = sns.lineplot(
+    #     x="Time Steps",
+    #     y="Episode Reward Mean",
+    #     hue="Exploration Algorithm",
+    #     data=df.loc[df["Time Steps"] >= left_crop],
+    #     errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
+    #     err_kws={"alpha": 0.05},
+    #     estimator=args.estimator,
+    # )
+    # plt.title(f"{env_name} Episode Rewards")
 
-    plot = sns.lineplot(
-        x="global_step",
-        y="rollout/ep_rew_mean",
-        hue="experiment_name",
-        data=df,
-        errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
-        err_kws={"alpha": 0.1},
-        estimator=args.estimator,
-    )
-    plot.figure.savefig(f"figures/rewards/converged_{img_name}.png")
-    plt.close()
+    # plot.figure.savefig(f"figures/rewards/cropped_{img_name}.png")
+    # plt.close()
 
     plt.figure()
     plt.axvline(x=novelty_step, linestyle="--")
 
     plot = sns.lineplot(
-        x="global_step",
-        y="rollout/ep_rew_mean",
-        hue="experiment_name",
-        data=df.loc[df["global_step"] >= left_crop],
+        x="Time Steps",
+        y="Episode Reward Mean",
+        hue="Exploration Algorithm",
+        data=df.loc[df["Time Steps"] >= left_crop],
         errorbar=make_error_bar_arg(args.error_bar_type, args.error_bar_arg),
-        err_kws={"alpha": 0.1},
+        err_kws={"alpha": 0.05},
         estimator=args.estimator,
     )
+    plt.ylim(0.9, 1)
+    plt.title(f"{env_name} Episode Rewards")
 
-    plot.figure.savefig(f"figures/rewards/converged_cropped_{img_name}.png")
+    plot.figure.savefig(f"figures/rewards/cropped_scaled_{img_name}.png")
     plt.close()
 
 

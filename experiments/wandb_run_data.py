@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 
-ENV_CONFIGS_FILE = "lava_maze_safe_to_hurt"
+ENV_CONFIGS_FILE = "door_key_change"
 N_TASKS = 2
 FILTER_UNCONVERGED_OUT = False
 STEP_RANGE = (0, 0)
@@ -25,16 +25,58 @@ STEP_RANGE = (0, 0)
 PULL_FROM_WANDB = True
 DATA_FILE = "wandb_runs.pkl"
 
+MIN_CONVERGED_RUNS = 6
+CROP_END = 4000000
+
 
 api = None
-additional_filters = []
 
 additional_filters = [
     {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
-    {"config.full_config.env_configs_file": ENV_CONFIGS_FILE},
-    {"config.total_time_steps": 10500000},
+    # {"config.full_config.env_configs_file": ENV_CONFIGS_FILE},
+    # {"config.total_time_steps": 20000000},
+    # {"config.n_runs": 5},
+    # {"config.total_time_steps": 10500000},
     # {"config.novelty_step": 10000000},
 ]
+
+# ENV_CONFIGS_FILE = "door_key_change"
+# MIN_CONVERGED_RUNS = 6
+# additional_filters = [
+#     {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
+# ]
+# CROP_END = 100000000
+
+# ENV_CONFIGS_FILE = "simple_to_lava_crossing"
+# MIN_CONVERGED_RUNS = 9
+# additional_filters = [
+#     {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
+# ]
+# CROP_END = 4000000
+
+# ENV_CONFIGS_FILE = "lava_maze_hurt_to_safe"
+# MIN_CONVERGED_RUNS = 3
+# additional_filters = [
+#     {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
+#     {"config.novelty_step": 10000000},
+# ]
+# CROP_END = 1000000000
+
+# ENV_CONFIGS_FILE = "lava_maze_safe_to_hurt"
+# MIN_CONVERGED_RUNS = 2
+# additional_filters = [
+#     {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
+#     {"config.total_time_steps": 10500000},
+# ]
+# CROP_END = 1000000000
+
+ENV_CONFIGS_FILE = "walker_thigh_length"
+MIN_CONVERGED_RUNS = 2
+additional_filters = [
+    {"created_at": {"$gt": datetime.datetime(2024, 2, 27, 22, 17).isoformat()}},
+    {"config.total_time_steps": 20000000},
+]
+CROP_END = 10000000000
 
 
 def get_api_instance():

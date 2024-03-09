@@ -23,6 +23,7 @@ from experiments.wandb_run_data import (
 
 wrd.PULL_FROM_WANDB = False
 wrd.FILTER_UNCONVERGED_OUT = False
+MIN_CONVERGED_RUNS = wrd.MIN_CONVERGED_RUNS
 WINDOW_SIZE = 50
 CONVERGENCE_REWARD_THRESHOLD = 0.9
 
@@ -120,8 +121,12 @@ def iq(arr: np.ndarray, quartile_margin: int = 25):
     ]
 
 
-def bootstrapped_sampling(arr: np.ndarray, k: int = 2, m: int = 5):
+def bootstrapped_sampling(arr: np.ndarray, k: int = MIN_CONVERGED_RUNS, m: int = 5):
     n = len(arr)
+    # if k >= n:
+    #     import pdb
+
+    #     pdb.set_trace()
     idx = np.array([np.random.choice(n, size=(k,), replace=False) for _ in range(m)])
     return arr[idx].flatten()
 
@@ -146,7 +151,7 @@ def calc_stats(
 
 
 def calc_arr_and_iq_stats(
-    arr: np.ndarray, ci_percentile: int = 95, k: int = 2, m: int = 2000
+    arr: np.ndarray, ci_percentile: int = 95, k: int = MIN_CONVERGED_RUNS, m: int = 2000
 ):
     return {
         **calc_stats(arr, ci_percentile=ci_percentile),
@@ -158,7 +163,7 @@ def calc_arr_and_iq_stats(
             include_arr=False,
         ),
         **calc_stats(
-            bootstrapped_sampling(arr=iq(arr), k=int(k * 0.75), m=m),
+            bootstrapped_sampling(arr=iq(arr), k=int(k * 0.5), m=m),
             ci_percentile=ci_percentile,
             prefix="iq_bootstrapped_",
             include_arr=False,
@@ -169,34 +174,66 @@ def calc_arr_and_iq_stats(
 class Aggregators:
 
     @staticmethod
-    def converged(metrics: Dict[str, np.ndarray]):
+    def converged_0(metrics: Dict[str, np.ndarray]):
         return {
-            k: calc_arr_and_iq_stats(metrics[k][metrics["converged"]])
+            k: calc_arr_and_iq_stats(metrics[k][metrics["converged_0"]])
             for k in metrics
-            if k != "converged"
+            if k != "converged_all" and k != "converged_0"
         }
 
     @staticmethod
-    def bootstrapped_converged(metrics: Dict[str, np.ndarray]):
+    def converged_all(metrics: Dict[str, np.ndarray]):
+        return {
+            k: calc_arr_and_iq_stats(metrics[k][metrics["converged_all"]])
+            for k in metrics
+            if k != "converged_all" and k != "converged_0"
+        }
+
+    @staticmethod
+    def bootstrapped_converged_0(metrics: Dict[str, np.ndarray]):
         return {
             k: calc_arr_and_iq_stats(
-                bootstrapped_sampling(metrics[k][metrics["converged"]])
+                bootstrapped_sampling(metrics[k][metrics["converged_0"]])
             )
             for k in metrics
-            if k != "converged"
+            if k != "converged_all" and k != "converged_0"
+        }
+
+    @staticmethod
+    def bootstrapped_converged_all(metrics: Dict[str, np.ndarray]):
+        return {
+            k: calc_arr_and_iq_stats(
+                bootstrapped_sampling(metrics[k][metrics["converged_all"]])
+            )
+            for k in metrics
+            if k != "converged_all" and k != "converged_0"
         }
 
     @staticmethod
     def all(metrics: Dict[str, np.ndarray]):
         return {
-            k: calc_arr_and_iq_stats(metrics[k]) for k in metrics if k != "converged"
+            k: calc_arr_and_iq_stats(metrics[k])
+            for k in metrics
+            if k != "converged_all" and k != "converged_0"
         }
 
 
 class Metrics:
     @staticmethod
-    def converged(rewards_df: pd.DataFrame, n_tasks: int = 2):
+    def converged_0(rewards_df: pd.DataFrame):
+        return rewards_df.iloc[0]["converged_0"]
+
+    @staticmethod
+    def converged_all(rewards_df: pd.DataFrame, n_tasks: int = 2):
         return all([rewards_df.iloc[0][f"converged_{i}"] for i in range(n_tasks)])
+
+    @staticmethod
+    def adaptive_freq(rewards_df: pd.DataFrame, n_tasks: int = 2):
+        return int(rewards_df.iloc[0][f"converged_{n_tasks - 1}"])
+
+    @staticmethod
+    def convergence_freq(rewards_df: pd.DataFrame, n_tasks: int = 2):
+        return int(rewards_df.iloc[0][f"converged_0"])
 
     @staticmethod
     def final_reward(rewards_df: pd.DataFrame):
