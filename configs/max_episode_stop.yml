@@ -1,0 +1,5 @@
+callbacks: 
+- StopTrainingOnMaxEpisodes
+callbacks_kwargs:
+- max_episodes: 5
+  verbose: 1

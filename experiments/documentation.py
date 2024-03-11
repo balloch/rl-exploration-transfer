@@ -6,6 +6,7 @@ curren_dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
 
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
 
 from utils.args import print_markdown
 
@@ -22,11 +23,31 @@ def generate_readme():
                 "## Run Command",
                 "From the root of this repo, use the following command to run an experiment:",
                 "```bash",
-                "python experiments/ir_novgrid.py -c {name of config file}",
+                "python experiments/experiment_runner.py -c {name of config file(s)} {additional config here}",
                 "```",
                 "For example:",
                 "```bash",
-                "python experiments/ir_novgrid.py -c defaults",
+                "python experiments/experiment_runner.py -c defaults",
+                "```",
+                "\n\n",
+                "## Run Scripts",
+                "From the root of this repo, these commands will also start experiment runs.",
+                "\n",
+                "To run a single experiment:",
+                "```bash",
+                "./scripts/run_experiment.sh {name of config file(s)} {additional config here}",
+                "```",
+                "To run all the preset experiments using all the different exploration methods:",
+                "```bash",
+                "./scripts/run_all_experiments.sh {additional config here}",
+                "```",
+                "To run a subset of the preset experiments:",
+                "```bash",
+                "./scripts/run_subset.sh {selector string} {additional config here}",
+                "```",
+                "Example usage of the subset script is as follows:",
+                "```bash",
+                "./scripts/run_subset.sh girm,diayn,re3 debug.yml --total-time-steps 10000000",
                 "```",
                 "\n\n",
                 "## Config Files",

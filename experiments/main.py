@@ -1,13 +1,9 @@
 import os
 import sys
-from typing import Any
 
 curren_dir_path = os.path.dirname(os.path.realpath(__file__))
 parent_dir_path = os.path.abspath(os.path.join(curren_dir_path, os.pardir))
 sys.path.append(parent_dir_path)
-
-import gymnasium as gym
-import minigrid
 
 from experiments.experiment_runner import run_experiment
 from experiments.config import make_parser
@@ -33,6 +29,9 @@ def main(args):
         novelty_step=args.novelty_step,
         n_envs=args.n_envs,
         wrappers=args.wrappers,
+        wrapper_kwargs_lst=args.wrappers_kwargs,
+        callbacks=args.callbacks,
+        callback_kwargs_lst=args.callbacks_kwargs,
         model_cls=args.rl_alg,
         model_kwargs=dict(
             verbose=args.verbose,
@@ -54,7 +53,7 @@ def main(args):
         gpu_idx=args.gpu_idx,
         print_novelty_box=args.print_novelty_box,
         save_model=args.save_model,
-        full_config=vars(args)
+        full_config=vars(args),
     )
 
 

@@ -61,10 +61,31 @@ def add_config_file_arg(parser: argparse.ArgumentParser) -> argparse.ArgumentPar
     return parser
 
 
+def remove_argument(parser: argparse.ArgumentParser, arg: str) -> None:
+    """Removes an argument from a parser
+
+    Args:
+        parser (argparse.ArgumentParser): The parser to remove the argument from.
+        arg (str): The name (long name not including leading dashes) of the argument to remove
+    """
+    for action in parser._actions:
+        opts = action.option_strings
+        if (opts and opts[0] == arg) or action.dest == arg:
+            parser._remove_action(action)
+            break
+
+    for action in parser._action_groups:
+        for group_action in action._group_actions:
+            opts = group_action.option_strings
+            if (opts and opts[0] == arg) or group_action.dest == arg:
+                action._group_actions.remove(group_action)
+                return
+
+
 def get_args(
     parser: argparse.ArgumentParser,
     configs_root: str = "",
-    default_ext: str = "json",
+    default_ext: str = "yml",
 ) -> argparse.Namespace:
     """Gets the arguments from an argparse parser with the added functionality of being able to use a config file. The parser load arguments in the following priority (for each argument it will go down the list until a value is found):
            - Command line arguments
@@ -74,7 +95,7 @@ def get_args(
     Args:
         parser (argparse.ArgumentParser): The argument parser to use (will be modified, do not use after this method)
         configs_root (str, optional): The root to use for the config files. Defaults to "".
-        default_ext (str, optional): The default extension to use if none is specified. Defaults to "json".
+        default_ext (str, optional): The default extension to use if none is specified. Defaults to "yml".
 
     Returns:
         argparse.Namespace: returns the parsed arguments.
@@ -109,7 +130,9 @@ def get_args(
     return args
 
 
-def print_markdown(parser: argparse.ArgumentParser, name: str, config_file=True, additional_info=None) -> None:    
+def print_markdown(
+    parser: argparse.ArgumentParser, name: str, config_file=True, additional_info=None
+) -> None:
     """Prints documentation for a given argument parser in the markdown format.
 
     Args:

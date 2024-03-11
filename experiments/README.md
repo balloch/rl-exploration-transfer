@@ -3,11 +3,34 @@ An experiment runner script for intrinsic reward exploration algorithms running 
 ## Run Command
 From the root of this repo, use the following command to run an experiment:
 ```bash
-python experiments/ir_novgrid.py -c {name of config file}
+python experiments/experiment_runner.py -c {name of config file(s)} {additional config here}
 ```
 For example:
 ```bash
-python experiments/ir_novgrid.py -c defaults
+python experiments/experiment_runner.py -c defaults
+```
+
+
+
+## Run Scripts
+From the root of this repo, these commands will also start experiment runs.
+
+
+To run a single experiment:
+```bash
+./scripts/run_experiment.sh {name of config file(s)} {additional config here}
+```
+To run all the preset experiments using all the different exploration methods:
+```bash
+./scripts/run_all_experiments.sh {additional config here}
+```
+To run a subset of the preset experiments:
+```bash
+./scripts/run_subset.sh {selector string} {additional config here}
+```
+Example usage of the subset script is as follows:
+```bash
+./scripts/run_subset.sh girm,diayn,re3 debug.yml --total-time-steps 10000000
 ```
 
 
@@ -55,6 +78,9 @@ Further, different environment specifications can be specified within this json,
 |--policy  |-p             |policy         |MlpPolicy           |rlexplore.\*/stable_baselines3.common.policies.\*|The type of policy to use. Examples include MlpPolicy, CnnPolicy, etc.                                                  |
 |--policy-kwargs|-pk            |policy_kwargs  |{}                  |json           |The kwargs to pass to the policy.                                                                                       |
 |--wrappers|-w             |wrappers       |[<class 'minigrid.wrappers.ImgObsWrapper'>, <class 'gymnasium.wrappers.flatten_observation.FlattenObservation'>]|rlexplore.\*/minigrid.wrappers.\*/gymnasium.wrappers.\*|The wrappers to use on the environment.                                                                                 |
+|--wrappers-kwargs|-wk            |wrappers_kwargs|[]                  |json           |The arguments for the wrappers to use on the environment.                                                               |
+|--callbacks|-cb            |callbacks      |[]                  |rlexplore.\*/stable_baselines3.common.callbacks.\*|The callbacks to pass to the model.learn function.                                                                      |
+|--callbacks-kwargs|-cbk           |callbacks_kwargs|[]                  |json           |THe arguments for the callbacks to use on the model.learn call.                                                         |
 |--wandb-project-name|-wpn           |wandb_project_name|rl-transfer-explore |str            |The project name to save under in wandb.                                                                                |
 |--wandb-save-videos|-wsv           |wandb_save_videos|False               |bool           |Whether or not to save videos to wandb.                                                                                 |
 |--wandb-video-freq|-wvf           |wandb_video_freq|2000                |int            |How often to save videos to wandb.                                                                                      |

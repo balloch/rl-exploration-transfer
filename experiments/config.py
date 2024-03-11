@@ -6,10 +6,11 @@ import minigrid
 import stable_baselines3 as sb3
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.policies import BasePolicy
+from stable_baselines3.common.callbacks import BaseCallback
 import stable_baselines3.common.policies as sb3_policies
+import stable_baselines3.common.callbacks as sb3_callbacks
 
 import rlexplore
-from rlexplore.ir_model import IR_PPO
 
 import novgrid.config as novgrid_config
 
@@ -32,6 +33,9 @@ POLICY_KWARGS = dict()
 
 WRAPPERS = [minigrid.wrappers.ImgObsWrapper, gym.wrappers.FlattenObservation]
 WRAPPERS_KWARGS = []
+
+CALLBACKS = []
+CALLBACKS_KWARGS = []
 
 WANDB_PROJECT_NAME = "rl-transfer-explore"
 WANDB_SAVE_VIDEOS = False
@@ -117,8 +121,34 @@ def make_parser() -> argparse.ArgumentParser:
         type=module_enum(
             rlexplore, minigrid.wrappers, gym.wrappers, super_cls_filter=gym.Wrapper
         ),
+        nargs="+",
         default=WRAPPERS,
         help="The wrappers to use on the environment.",
+    )
+    parser.add_argument(
+        "--wrappers-kwargs",
+        "-wk",
+        type=json_type,
+        nargs="+",
+        default=WRAPPERS_KWARGS,
+        help="The arguments for the wrappers to use on the environment.",
+    )
+
+    parser.add_argument(
+        "--callbacks",
+        "-cb",
+        type=module_enum(rlexplore, sb3_callbacks, super_cls_filter=BaseCallback),
+        nargs="+",
+        default=CALLBACKS,
+        help="The callbacks to pass to the model.learn function.",
+    )
+    parser.add_argument(
+        "--callbacks-kwargs",
+        "-cbk",
+        type=json_type,
+        nargs="+",
+        default=CALLBACKS_KWARGS,
+        help="THe arguments for the callbacks to use on the model.learn call.",
     )
 
     parser.add_argument(

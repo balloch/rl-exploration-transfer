@@ -10,7 +10,9 @@ import stable_baselines3 as sb3
 from stable_baselines3.common.base_class import BaseAlgorithm
 from stable_baselines3.common.policies import BasePolicy
 import stable_baselines3.common.policies as sb3_policies
+import stable_baselines3.common.callbacks as sb3_callbacks
 from stable_baselines3.common.vec_env import VecVideoRecorder
+from stable_baselines3.common.callbacks import CallbackList, BaseCallback
 
 import wandb
 from wandb.integration.sb3 import WandbCallback
@@ -36,12 +38,14 @@ def run_experiment(
     total_time_steps: int = 1_000_000,
     novelty_step: int = 250_000,
     n_envs: int = 1,
-    wrappers: List[gym.Wrapper] = [],
-    wrapper_kwargs_lst: List[Dict[str, Any]] = [],
+    wrappers: Optional[List[gym.Wrapper]] = None,
+    wrapper_kwargs_lst: Optional[List[Optional[Dict[str, Any]]]] = None,
     model_cls: Union[str, Type[BaseAlgorithm]] = "PPO",
     model_kwargs: Optional[Dict[str, Any]] = None,
     policy: Union[str, BasePolicy] = "MlpPolicy",
     policy_kwargs: Optional[Dict[str, Any]] = None,
+    callbacks: Optional[List[BaseCallback]] = None,
+    callback_kwargs_lst: Optional[List[Optional[Dict[str, Any]]]] = None,
     save_model: bool = True,
     n_runs: int = 1,
     log: bool = True,
@@ -62,6 +66,30 @@ def run_experiment(
     full_config: Dict[str, Any] = None,
 ):
     config = dict(locals().copy())
+
+    if wrappers is None:
+        wrappers = []
+    if wrapper_kwargs_lst is None:
+        wrapper_kwargs_lst = []
+
+    if callbacks is None:
+        callbacks = []
+    if callback_kwargs_lst is None:
+        callback_kwargs_lst = []
+
+    wrapper_kwargs_lst = [
+        ({} if wrapper_kwargs is None else wrapper_kwargs)
+        for wrapper_kwargs in wrapper_kwargs_lst
+    ]
+    for i in range(len(wrapper_kwargs_lst), len(wrappers)):
+        wrapper_kwargs_lst.append({})
+
+    callback_kwargs_lst = [
+        ({} if callback_kwargs is None else callback_kwargs)
+        for callback_kwargs in callback_kwargs_lst
+    ]
+    for i in range(len(callback_kwargs_lst), len(callbacks)):
+        callback_kwargs_lst.append({})
 
     if gpu_idx is not None:
         os.environ["CUDA_VISIBLE_DEVICES"] = gpu_idx
@@ -89,13 +117,30 @@ def run_experiment(
         ).get(policy.lower(), policy)
 
     wrapper_classes = get_all_subclasses_from_modules(
-        rlexplore, minigrid.wrappers, gym.wrappers, super_cls=gym.Wrapper, lower_case_keys=True
+        rlexplore,
+        minigrid.wrappers,
+        gym.wrappers,
+        super_cls=gym.Wrapper,
+        lower_case_keys=True,
     )
     for i in range(len(wrappers)):
         wrappers[i] = (
             wrapper_classes[wrappers[i].lower()]
             if type(wrappers[i]) == str
             else wrappers[i]
+        )
+
+    callback_classes = get_all_subclasses_from_modules(
+        rlexplore,
+        sb3_callbacks,
+        super_cls=BaseCallback,
+        lower_case_keys=True,
+    )
+    for i in range(len(callbacks)):
+        callbacks[i] = (
+            callback_classes[callbacks[i].lower()]
+            if type(callbacks[i]) == str
+            else callbacks[i]
         )
 
     for run_num in range(n_runs):
@@ -175,18 +220,44 @@ def run_experiment(
         if seed is not None:
             model.set_random_seed(seed=seed + run_num)
 
-        model.learn(
-            total_timesteps=total_time_steps,
-            log_interval=log_interval,
-            tb_log_name=model_name,
-            callback=(
+        callback_instances = []
+
+        if log and use_wandb:
+            callback_instances.append(
                 WandbCallback(
                     gradient_save_freq=wandb_gradient_save_freq,
                     model_save_freq=wandb_model_save_freq,
                     model_save_path=model_file_path,
                     verbose=wandb_verbose,
                 )
-                if log and use_wandb
+            )
+
+        def update_callback_kwargs(callback_kwargs):
+            return {
+                k: (
+                    v
+                    if type(v) != dict or "callback_cls" not in v
+                    else (
+                        callback_classes[v["callback_cls"].lower()]
+                        if type(v["callback_cls"]) == str
+                        else v["callback_cls"]
+                    )(update_callback_kwargs(v.get("callback_kwargs", {})))
+                )
+                for k, v in callback_kwargs.items()
+            }
+
+        for callback_cls, callback_kwargs in zip(callbacks, callback_kwargs_lst):
+            callback_instances.append(
+                callback_cls(**update_callback_kwargs(callback_kwargs=callback_kwargs)),
+            )
+
+        model.learn(
+            total_timesteps=total_time_steps,
+            log_interval=log_interval,
+            tb_log_name=model_name,
+            callback=(
+                CallbackList(callback_instances)
+                if len(callback_instances) > 0
                 else None
             ),
         )

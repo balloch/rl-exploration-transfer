@@ -23,6 +23,8 @@ from rlexplore.noisy_nets import (
     NoisyDQNPolicy,
     NoisyDQNCnnPolicy,
 )
+from rlexplore.diayn import Diayn, DiaynSkillWrapper
 from rlexplore.utils import create_env, cleanup_log_dir
 
 from rlexplore.ir_model import *
+from rlexplore.utils.callbacks import *
