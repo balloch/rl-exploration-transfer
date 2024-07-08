@@ -176,7 +176,7 @@ A python script to tag all the wandb runs with tags that allow for easier filter
 From the root of this repo, use the following command to tag all wandb runs:
 ```bash
 python experiments/tag_wandb_runs.py {argparse config here}
-
+```
 
 
 
@@ -199,7 +199,7 @@ A python script to pull the reward data from wandb and plot it using seaborn.
 From the root of this repo, use the following command to plot the reward data:
 ```bash
 python experiments/plot_data.py {argparse config here}
-
+```
 
 
 
